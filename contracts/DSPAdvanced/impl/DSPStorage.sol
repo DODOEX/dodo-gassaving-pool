@@ -62,7 +62,7 @@ contract DSPStorage is ReentrancyGuard {
     uint256 public _LP_FEE_RATE_;
     uint256 public _K_;
     uint256 public _I_;
-    uint256 public _PRICE_LIMIT_;
+    uint256 public _PRICE_LIMIT_ = 1e3;
 
     // ============ Mt Fee ============
 
