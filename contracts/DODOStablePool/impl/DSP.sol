@@ -5,9 +5,10 @@
 
 */
 
-pragma solidity ^0.7.5;
+pragma solidity 0.7.5;
 pragma experimental ABIEncoderV2;
 
+import {IFeeRateModel} from "../../lib/FeeRateModel.sol";
 import {IERC20} from "../../intf/IERC20.sol";
 import {DSPTrader} from "./DSPTrader.sol";
 import {DSPFunding} from "./DSPFunding.sol";
@@ -25,7 +26,7 @@ contract DSP is DSPTrader, DSPFunding {
         address baseTokenAddress,
         address quoteTokenAddress,
         uint256 lpFeeRate,
-        uint256 mtFeeRate,
+        address mtFeeRateModel,
         uint256 i,
         uint256 k,
         bool isOpenTWAP
@@ -44,7 +45,7 @@ contract DSP is DSPTrader, DSPFunding {
         _K_ = k;
 
         _LP_FEE_RATE_ = lpFeeRate;
-        _MT_FEE_RATE_ = mtFeeRate;
+        _MT_FEE_RATE_MODEL_ = IFeeRateModel(mtFeeRateModel);
         _MAINTAINER_ = maintainer;
 
         _IS_OPEN_TWAP_ = isOpenTWAP;
@@ -67,7 +68,7 @@ contract DSP is DSPTrader, DSPFunding {
                 // keccak256('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'),
                 0x8b73c3c69bb8fe3d512ecc4cf759cc79239f7b179b0ffacaa9a75d522b39400f,
                 keccak256(bytes(name)),
-                keccak256(bytes("2")),
+                keccak256(bytes("1")),
                 chainId,
                 address(this)
             )
@@ -90,6 +91,6 @@ contract DSP is DSPTrader, DSPFunding {
     // ============ Version Control ============
 
     function version() external pure returns (string memory) {
-        return "DSP 1.0.2";
+        return "DSP 1.0.1";
     }
 }

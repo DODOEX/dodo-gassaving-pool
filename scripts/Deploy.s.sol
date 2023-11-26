@@ -5,12 +5,12 @@ pragma solidity ^0.7.5;
 import "../lib/forge-std/src/Script.sol";
 import "../lib/forge-std/src/console.sol";
 
-import {DSP} from "../contracts/DSPAdvanced/impl/DSP.sol";
+import {DSPAdvanced} from "../contracts/DSPAdvanced/impl/DSPAdvanced.sol";
 
 
 contract Deploy is Script {
 
-    DSP public dspAdvanced;
+    DSPAdvanced public dspAdvanced;
 
     address constant DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
     address constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
@@ -25,10 +25,9 @@ contract Deploy is Script {
     uint256 constant K = 500000000000000;
     bool constant IS_OPEN_TWAP = false;
 
-    function run() public returns (DSP){
+    function run() public returns (DSPAdvanced){
         // Deploy DSPAdvanced
-        dspAdvanced = new DSP();
-        console.log("DSPAdvanced deployed at: %s", address(dspAdvanced));
+        dspAdvanced = new DSPAdvanced();
 
         // init DSPAdvanced
         dspAdvanced.init(

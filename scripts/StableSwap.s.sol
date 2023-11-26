@@ -8,8 +8,8 @@ import "../lib/forge-std/src/console.sol";
 import {Deploy} from "../scripts/Deploy.s.sol";
 
 import {OGP} from "../contracts/OptimalGasPool/impl/OGP.sol";
-import {DSP} from "../contracts/DSPAdvanced/impl/DSP.sol"; 
-import {IDSP} from "../contracts/DSPAdvanced/intf/IDSP.sol";
+import {DSPAdvanced} from "../contracts/DSPAdvanced/impl/DSPAdvanced.sol";
+import {IDSP} from "../contracts/DODOStablePool/intf/IDSP.sol";
 import {ISwapRouter} from "../contracts/DSPAdvanced/intf/ISwapRouter.sol";
 import {IERC20} from "../contracts/intf/IERC20.sol";
 
@@ -28,9 +28,10 @@ contract StableSwap is Script {
     address LP = vm.addr(1);
     
     Deploy deploy = new Deploy();
-    IDSP constant dsp = IDSP(0x3058EF90929cb8180174D74C507176ccA6835D73); // DAI-USDT
-    DSP dspAdvanced = deploy.run(); // DAI-USDC
+    DSPAdvanced dspAdvanced = deploy.run(); // DAI-USDC
     ISwapRouter uniV3Router = ISwapRouter(UniV3_ROUTER);
+
+    IDSP dsp = IDSP(0x3058EF90929cb8180174D74C507176ccA6835D73); // DAI-USDT
 
     OGP ogp = new OGP(); // USDC-USDT
 

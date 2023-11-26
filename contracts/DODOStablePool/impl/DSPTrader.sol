@@ -5,7 +5,7 @@
 
 */
 
-pragma solidity ^0.7.5;
+pragma solidity 0.7.5;
 pragma experimental ABIEncoderV2;
 
 import {DSPVault} from "./DSPVault.sol";
@@ -13,8 +13,6 @@ import {SafeMath} from "../../lib/SafeMath.sol";
 import {DecimalMath} from "../../lib/DecimalMath.sol";
 import {PMMPricing} from "../../lib/PMMPricing.sol";
 import {IDODOCallee} from "../../intf/IDODOCallee.sol";
-
-import {console} from "../../../lib/forge-std/src/console.sol";
 
 contract DSPTrader is DSPVault {
     using SafeMath for uint256;
@@ -37,7 +35,7 @@ contract DSPTrader is DSPVault {
     // ============ Trade Functions ============
 
     function sellBase(address to) external preventReentrant returns (uint256 receiveQuoteAmount) {
-        uint256 baseBalance = _BASE_TOKEN_.balanceOf(address(this)).sub(_MT_FEE_BASE_);
+        uint256 baseBalance = _BASE_TOKEN_.balanceOf(address(this));
         uint256 baseInput = baseBalance.sub(uint256(_BASE_RESERVE_));
         uint256 mtFee;
         uint256 newBaseTarget;
@@ -45,18 +43,17 @@ contract DSPTrader is DSPVault {
         (receiveQuoteAmount, mtFee, newRState, newBaseTarget) = querySellBase(tx.origin, baseInput);
 
         _transferQuoteOut(to, receiveQuoteAmount);
-        _MT_FEE_QUOTE_ = _MT_FEE_QUOTE_.add(mtFee);
-        
+        _transferQuoteOut(_MAINTAINER_, mtFee);
 
         // update TARGET
-        if (_RState_ != uint32(newRState)) {    
+        if (_RState_ != uint32(newRState)) {
             require(newBaseTarget <= uint112(-1), "OVERFLOW");
             _BASE_TARGET_ = uint112(newBaseTarget);
             _RState_ = uint32(newRState);
             emit RChange(newRState);
         }
 
-        _setReserve(baseBalance, _QUOTE_TOKEN_.balanceOf(address(this)).sub(_MT_FEE_QUOTE_));
+        _setReserve(baseBalance, _QUOTE_TOKEN_.balanceOf(address(this)));
 
         emit DODOSwap(
             address(_BASE_TOKEN_),
@@ -69,7 +66,7 @@ contract DSPTrader is DSPVault {
     }
 
     function sellQuote(address to) external preventReentrant returns (uint256 receiveBaseAmount) {
-        uint256 quoteBalance = _QUOTE_TOKEN_.balanceOf(address(this)).sub(_MT_FEE_QUOTE_);
+        uint256 quoteBalance = _QUOTE_TOKEN_.balanceOf(address(this));
         uint256 quoteInput = quoteBalance.sub(uint256(_QUOTE_RESERVE_));
         uint256 mtFee;
         uint256 newQuoteTarget;
@@ -80,7 +77,7 @@ contract DSPTrader is DSPVault {
         );
 
         _transferBaseOut(to, receiveBaseAmount);
-        _MT_FEE_BASE_ = _MT_FEE_BASE_.add(mtFee);
+        _transferBaseOut(_MAINTAINER_, mtFee);
 
         // update TARGET
         if (_RState_ != uint32(newRState)) {
@@ -90,7 +87,7 @@ contract DSPTrader is DSPVault {
             emit RChange(newRState);
         }
 
-        _setReserve(_BASE_TOKEN_.balanceOf(address(this)).sub(_MT_FEE_BASE_), quoteBalance);
+        _setReserve(_BASE_TOKEN_.balanceOf(address(this)), quoteBalance);
 
         emit DODOSwap(
             address(_QUOTE_TOKEN_),
@@ -114,8 +111,8 @@ contract DSPTrader is DSPVault {
         if (data.length > 0)
             IDODOCallee(assetTo).DSPFlashLoanCall(msg.sender, baseAmount, quoteAmount, data);
 
-        uint256 baseBalance = _BASE_TOKEN_.balanceOf(address(this)).sub(_MT_FEE_BASE_);
-        uint256 quoteBalance = _QUOTE_TOKEN_.balanceOf(address(this)).sub(_MT_FEE_QUOTE_);
+        uint256 baseBalance = _BASE_TOKEN_.balanceOf(address(this));
+        uint256 quoteBalance = _QUOTE_TOKEN_.balanceOf(address(this));
 
         // no input -> pure loss
         require(
@@ -137,9 +134,8 @@ contract DSPTrader is DSPVault {
                 uint256(_BASE_RESERVE_).sub(baseBalance) <= receiveBaseAmount,
                 "FLASH_LOAN_FAILED"
             );
-            
-            _MT_FEE_BASE_ = _MT_FEE_BASE_.add(mtFee);
-            
+
+            _transferBaseOut(_MAINTAINER_, mtFee);
             if (_RState_ != uint32(newRState)) {
                 require(newQuoteTarget <= uint112(-1), "OVERFLOW");
                 _QUOTE_TARGET_ = uint112(newQuoteTarget);
@@ -171,8 +167,7 @@ contract DSPTrader is DSPVault {
                 "FLASH_LOAN_FAILED"
             );
 
-            _MT_FEE_QUOTE_ = _MT_FEE_QUOTE_.add(mtFee);
-            
+            _transferQuoteOut(_MAINTAINER_, mtFee);
             if (_RState_ != uint32(newRState)) {
                 require(newBaseTarget <= uint112(-1), "OVERFLOW");
                 _BASE_TARGET_ = uint112(newBaseTarget);
@@ -210,7 +205,7 @@ contract DSPTrader is DSPVault {
         (receiveQuoteAmount, newRState) = PMMPricing.sellBaseToken(state, payBaseAmount);
 
         uint256 lpFeeRate = _LP_FEE_RATE_;
-        uint256 mtFeeRate = _MT_FEE_RATE_;
+        uint256 mtFeeRate = _MT_FEE_RATE_MODEL_.getFeeRate(trader);
         mtFee = DecimalMath.mulFloor(receiveQuoteAmount, mtFeeRate);
         receiveQuoteAmount = receiveQuoteAmount
             .sub(DecimalMath.mulFloor(receiveQuoteAmount, lpFeeRate))
@@ -232,7 +227,7 @@ contract DSPTrader is DSPVault {
         (receiveBaseAmount, newRState) = PMMPricing.sellQuoteToken(state, payQuoteAmount);
 
         uint256 lpFeeRate = _LP_FEE_RATE_;
-        uint256 mtFeeRate = _MT_FEE_RATE_;
+        uint256 mtFeeRate = _MT_FEE_RATE_MODEL_.getFeeRate(trader);
         mtFee = DecimalMath.mulFloor(receiveBaseAmount, mtFeeRate);
         receiveBaseAmount = receiveBaseAmount
             .sub(DecimalMath.mulFloor(receiveBaseAmount, lpFeeRate))
