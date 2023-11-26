@@ -5,14 +5,17 @@
 
 */
 
-pragma solidity 0.6.10;
+
+pragma solidity ^0.7.5;
 pragma experimental ABIEncoderV2;
 
 import {DSPVault} from "./DSPVault.sol";
 import {DecimalMath} from "../../lib/DecimalMath.sol";
+import {SafeMath} from "../../lib/SafeMath.sol";
 import {IDODOCallee} from "../../intf/IDODOCallee.sol";
 
 contract DSPFunding is DSPVault {
+    using SafeMath for uint256;
     // ============ Events ============
 
     event BuyShares(address to, uint256 increaseShares, uint256 totalShares);

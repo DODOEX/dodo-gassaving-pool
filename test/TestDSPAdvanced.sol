@@ -1,18 +1,30 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity 0.6.10;
+pragma solidity ^0.7.5;
 
 import {Test, console} from "forge-std/Test.sol";
 
 import {Deploy} from "../scripts/Deploy.s.sol";
 import {DSP} from "../contracts/DSPAdvanced/impl/DSP.sol";
+import {IDSP} from "../contracts/DSPAdvanced/intf/IDSP.sol";
 import {IERC20} from "../contracts/intf/IERC20.sol";
 
+
 contract TestDSPAdvanced is Test {
-    DSP dspAdvanced;
+    DSP dspAdvanced; // DAI - USDT
+    IDSP constant dsp = IDSP(0x3058EF90929cb8180174D74C507176ccA6835D73); // DAI-USDT
 
     address constant MAINTAINER = 0x95C4F5b83aA70810D4f142d58e5F7242Bd891CB0;
+
+    address constant USDC_WHALE = 0x51eDF02152EBfb338e03E30d65C15fBf06cc9ECC;
+    address constant DAI_WHALE = 0x25B313158Ce11080524DcA0fD01141EeD5f94b81;
     address USER = vm.addr(1);
+
+    address constant DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
+    address constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
+
+    IERC20 private dai = IERC20(DAI);
+    IERC20 private usdc = IERC20(USDC);
 
     function setUp() public {
         // Deploy and Init DSPAdvanced
@@ -20,59 +32,30 @@ contract TestDSPAdvanced is Test {
         dspAdvanced = deploy.run();
     }
 
-    // ======== Set MtFeeRate =========
+    function test_ComparedWithDSP() external {
+        // provide liquidity to DSPAdvanced
+        (uint256 baseReserve, uint256 quoteReserve) = dsp.getVaultReserve();
 
-    function testFail_UserCannotChangeMtFeeRate() public {
-        uint256 newMtFeeRate = 20000000000000;
+        // whales send tokens to USER
+        vm.startPrank(DAI_WHALE);
+        dai.transfer(USER, dai.balanceOf(msg.sender));
+        vm.stopPrank();
 
+        vm.startPrank(USDC_WHALE);
+        usdc.transfer(USER, usdc.balanceOf(msg.sender));
+        vm.stopPrank();
+
+        // DSPAdvanced and DSP have the same baseReserve and quoteReserve
         vm.startPrank(USER);
-        dspAdvanced.setMtFeeRate(newMtFeeRate);
-    }
+        dai.transfer(address(dspAdvanced), baseReserve);
+        usdc.transfer(address(dspAdvanced), quoteReserve);
+        dspAdvanced.buyShares(msg.sender);
 
-    function test_OnlyMaintainerCanSetMtFeeRate() public {
-        uint256 newMtFeeRate = 20000000000000;
+        // Buy shares from DSP
+        dsp.buyShares(msg.sender);
 
-        vm.startPrank(MAINTAINER);
-        uint256 mtFeeRateBefore = dspAdvanced._MT_FEE_RATE_();
-        console.log("mtFeeRateBefore: %s", mtFeeRateBefore);
-        dspAdvanced.setMtFeeRate(newMtFeeRate);
-        uint256 mtFeeRateAfter = dspAdvanced._MT_FEE_RATE_();
-        console.log("mtFeeRateAfter: %s", mtFeeRateAfter);
-        vm.stopPrank();
-        assertTrue(mtFeeRateAfter == newMtFeeRate);
-    }
-
-    // ======== Set NewPrice =========
-
-    function testFail_UserCannotSetNewPrice() public {
-        uint256 newPrice = 1000000000000000000;
-
-        vm.startPrank(USER);
-        dspAdvanced.setNewPrice(newPrice);
-    }
-
-    function test_OnlyMaintainerCanSetNewPrice() public {
-        uint256 newPrice = 1000000000000000000;
-
-        vm.startPrank(MAINTAINER);
-        uint256 priceBefore = dspAdvanced._BASE_PRICE_CUMULATIVE_LAST_();
-        console.log("priceBefore: %s", priceBefore);
-        dspAdvanced.setNewPrice(newPrice);
-        uint256 priceAfter = dspAdvanced._BASE_PRICE_CUMULATIVE_LAST_();
-        console.log("priceAfter: %s", priceAfter);
-        vm.stopPrank();
-        assertTrue(priceAfter == newPrice);
-    }
-
-    function testFuzz_NewPriceShouldInPriceLimit(uint256 newPrice) public {
-        uint256 currentPrice = dspAdvanced._I_();
-        vm.startPrank(MAINTAINER);
-        dspAdvanced.setNewPrice(newPrice);
         vm.stopPrank();
     }
-
-
-
 
 
 

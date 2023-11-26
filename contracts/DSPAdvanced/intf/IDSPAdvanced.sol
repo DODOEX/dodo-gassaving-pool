@@ -5,7 +5,7 @@
 
 */
 
-pragma solidity 0.6.10;
+pragma solidity ^0.7.5;
 pragma experimental ABIEncoderV2;
 
 interface IDSPAdvanced {
@@ -30,7 +30,7 @@ interface IDSPAdvanced {
 
     function getFeeRate() external view returns (uint256 lpFeeRate, uint256 mtFeeRate);
 
-    function getMtFeeTotal() public view returns (uint256 mtFeeBase, uint256 mtFeeQuote);
+    function getMtFeeTotal() external view returns (uint256 mtFeeBase, uint256 mtFeeQuote);
 
     function sellBase(address to) external returns (uint256);
 
