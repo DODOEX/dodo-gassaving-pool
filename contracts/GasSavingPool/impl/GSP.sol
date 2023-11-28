@@ -30,8 +30,8 @@ contract GSP is GSPTrader, GSPFunding {
         uint256 k,
         bool isOpenTWAP
     ) external {
-        require(!_DSP_INITIALIZED_, "DSP_INITIALIZED");
-        _DSP_INITIALIZED_ = true;
+        require(!_GSP_INITIALIZED_, "GSP_INITIALIZED");
+        _GSP_INITIALIZED_ = true;
         
         require(baseTokenAddress != quoteTokenAddress, "BASE_QUOTE_CAN_NOT_BE_SAME");
         _BASE_TOKEN_ = IERC20(baseTokenAddress);
@@ -67,7 +67,7 @@ contract GSP is GSPTrader, GSPFunding {
                 // keccak256('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'),
                 0x8b73c3c69bb8fe3d512ecc4cf759cc79239f7b179b0ffacaa9a75d522b39400f,
                 keccak256(bytes(name)),
-                keccak256(bytes("2")),
+                keccak256(bytes("1")),
                 chainId,
                 address(this)
             )
@@ -90,6 +90,6 @@ contract GSP is GSPTrader, GSPFunding {
     // ============ Version Control ============
 
     function version() external pure returns (string memory) {
-        return "DSP 1.0.2";
+        return "GSP 1.0.1";
     }
 }

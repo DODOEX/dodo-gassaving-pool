@@ -9,7 +9,6 @@ pragma solidity 0.8.16;
 pragma experimental ABIEncoderV2;
 
 import {GSPVault} from "./GSPVault.sol";
-import {SafeMath} from "../../lib/SafeMath.sol";
 import {DecimalMath} from "../../lib/DecimalMath.sol";
 import {PMMPricing} from "../../lib/PMMPricing.sol";
 import {IDODOCallee} from "../../intf/IDODOCallee.sol";
@@ -17,7 +16,6 @@ import {IDODOCallee} from "../../intf/IDODOCallee.sol";
 import {console} from "../../../lib/forge-std/src/console.sol";
 
 contract GSPTrader is GSPVault {
-    using SafeMath for uint256;
 
     // ============ Events ============
 
@@ -37,15 +35,15 @@ contract GSPTrader is GSPVault {
     // ============ Trade Functions ============
 
     function sellBase(address to) external preventReentrant returns (uint256 receiveQuoteAmount) {
-        uint256 baseBalance = _BASE_TOKEN_.balanceOf(address(this)).sub(_MT_FEE_BASE_);
-        uint256 baseInput = baseBalance.sub(uint256(_BASE_RESERVE_));
+        uint256 baseBalance = _BASE_TOKEN_.balanceOf(address(this)) - _MT_FEE_BASE_;
+        uint256 baseInput = baseBalance - uint256(_BASE_RESERVE_);
         uint256 mtFee;
         uint256 newBaseTarget;
         PMMPricing.RState newRState;
         (receiveQuoteAmount, mtFee, newRState, newBaseTarget) = querySellBase(tx.origin, baseInput);
 
         _transferQuoteOut(to, receiveQuoteAmount);
-        _MT_FEE_QUOTE_ = _MT_FEE_QUOTE_.add(mtFee);
+        _MT_FEE_QUOTE_ = _MT_FEE_QUOTE_ + mtFee;
         
 
         // update TARGET
@@ -56,7 +54,7 @@ contract GSPTrader is GSPVault {
             emit RChange(newRState);
         }
 
-        _setReserve(baseBalance, _QUOTE_TOKEN_.balanceOf(address(this)).sub(_MT_FEE_QUOTE_));
+        _setReserve(baseBalance, _QUOTE_TOKEN_.balanceOf(address(this)) - _MT_FEE_QUOTE_);
 
         emit DODOSwap(
             address(_BASE_TOKEN_),
@@ -69,8 +67,8 @@ contract GSPTrader is GSPVault {
     }
 
     function sellQuote(address to) external preventReentrant returns (uint256 receiveBaseAmount) {
-        uint256 quoteBalance = _QUOTE_TOKEN_.balanceOf(address(this)).sub(_MT_FEE_QUOTE_);
-        uint256 quoteInput = quoteBalance.sub(uint256(_QUOTE_RESERVE_));
+        uint256 quoteBalance = _QUOTE_TOKEN_.balanceOf(address(this)) - _MT_FEE_QUOTE_;
+        uint256 quoteInput = quoteBalance - uint256(_QUOTE_RESERVE_);
         uint256 mtFee;
         uint256 newQuoteTarget;
         PMMPricing.RState newRState;
@@ -80,7 +78,7 @@ contract GSPTrader is GSPVault {
         );
 
         _transferBaseOut(to, receiveBaseAmount);
-        _MT_FEE_BASE_ = _MT_FEE_BASE_.add(mtFee);
+        _MT_FEE_BASE_ = _MT_FEE_BASE_ + mtFee;
 
         // update TARGET
         if (_RState_ != uint32(newRState)) {
@@ -90,7 +88,7 @@ contract GSPTrader is GSPVault {
             emit RChange(newRState);
         }
 
-        _setReserve(_BASE_TOKEN_.balanceOf(address(this)).sub(_MT_FEE_BASE_), quoteBalance);
+        _setReserve((_BASE_TOKEN_.balanceOf(address(this)) - _MT_FEE_BASE_), quoteBalance);
 
         emit DODOSwap(
             address(_QUOTE_TOKEN_),
@@ -114,8 +112,8 @@ contract GSPTrader is GSPVault {
         if (data.length > 0)
             IDODOCallee(assetTo).DSPFlashLoanCall(msg.sender, baseAmount, quoteAmount, data);
 
-        uint256 baseBalance = _BASE_TOKEN_.balanceOf(address(this)).sub(_MT_FEE_BASE_);
-        uint256 quoteBalance = _QUOTE_TOKEN_.balanceOf(address(this)).sub(_MT_FEE_QUOTE_);
+        uint256 baseBalance = _BASE_TOKEN_.balanceOf(address(this)) - _MT_FEE_BASE_;
+        uint256 quoteBalance = _QUOTE_TOKEN_.balanceOf(address(this)) - _MT_FEE_QUOTE_;
 
         // no input -> pure loss
         require(
@@ -126,7 +124,7 @@ contract GSPTrader is GSPVault {
         // sell quote case
         // quote input + base output
         if (baseBalance < _BASE_RESERVE_) {
-            uint256 quoteInput = quoteBalance.sub(uint256(_QUOTE_RESERVE_));
+            uint256 quoteInput = quoteBalance - uint256(_QUOTE_RESERVE_);
             (
                 uint256 receiveBaseAmount,
                 uint256 mtFee,
@@ -134,11 +132,11 @@ contract GSPTrader is GSPVault {
                 uint256 newQuoteTarget
             ) = querySellQuote(tx.origin, quoteInput); // revert if quoteBalance<quoteReserve
             require(
-                uint256(_BASE_RESERVE_).sub(baseBalance) <= receiveBaseAmount,
+                (uint256(_BASE_RESERVE_) - baseBalance) <= receiveBaseAmount,
                 "FLASH_LOAN_FAILED"
             );
             
-            _MT_FEE_BASE_ = _MT_FEE_BASE_.add(mtFee);
+            _MT_FEE_BASE_ = _MT_FEE_BASE_ + mtFee;
             
             if (_RState_ != uint32(newRState)) {
                 require(newQuoteTarget <= type(uint112).max, "OVERFLOW");
@@ -159,7 +157,7 @@ contract GSPTrader is GSPVault {
         // sell base case
         // base input + quote output
         if (quoteBalance < _QUOTE_RESERVE_) {
-            uint256 baseInput = baseBalance.sub(uint256(_BASE_RESERVE_));
+            uint256 baseInput = baseBalance - uint256(_BASE_RESERVE_);
             (
                 uint256 receiveQuoteAmount,
                 uint256 mtFee,
@@ -167,11 +165,11 @@ contract GSPTrader is GSPVault {
                 uint256 newBaseTarget
             ) = querySellBase(tx.origin, baseInput); // revert if baseBalance<baseReserve
             require(
-                uint256(_QUOTE_RESERVE_).sub(quoteBalance) <= receiveQuoteAmount,
+                (uint256(_QUOTE_RESERVE_) - quoteBalance) <= receiveQuoteAmount,
                 "FLASH_LOAN_FAILED"
             );
 
-            _MT_FEE_QUOTE_ = _MT_FEE_QUOTE_.add(mtFee);
+            _MT_FEE_QUOTE_ = _MT_FEE_QUOTE_ + mtFee;
             
             if (_RState_ != uint32(newRState)) {
                 require(newBaseTarget <= type(uint112).max, "OVERFLOW");
@@ -213,8 +211,8 @@ contract GSPTrader is GSPVault {
         uint256 mtFeeRate = _MT_FEE_RATE_;
         mtFee = DecimalMath.mulFloor(receiveQuoteAmount, mtFeeRate);
         receiveQuoteAmount = receiveQuoteAmount
-            .sub(DecimalMath.mulFloor(receiveQuoteAmount, lpFeeRate))
-            .sub(mtFee);
+            - DecimalMath.mulFloor(receiveQuoteAmount, lpFeeRate)
+            - mtFee;
         newBaseTarget = state.B0;
     }
 
@@ -235,8 +233,8 @@ contract GSPTrader is GSPVault {
         uint256 mtFeeRate = _MT_FEE_RATE_;
         mtFee = DecimalMath.mulFloor(receiveBaseAmount, mtFeeRate);
         receiveBaseAmount = receiveBaseAmount
-            .sub(DecimalMath.mulFloor(receiveBaseAmount, lpFeeRate))
-            .sub(mtFee);
+            - DecimalMath.mulFloor(receiveBaseAmount, lpFeeRate)
+            - mtFee;
         newQuoteTarget = state.Q0;
     }
 }

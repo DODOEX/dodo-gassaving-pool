@@ -9,16 +9,14 @@ pragma solidity 0.8.16;
 pragma experimental ABIEncoderV2;
 
 import {ReentrancyGuard} from "../../lib/ReentrancyGuard.sol";
-import {SafeMath} from "../../lib/SafeMath.sol";
 import {DODOMath} from "../../lib/DODOMath.sol";
 import {DecimalMath} from "../../lib/DecimalMath.sol";
 import {IERC20} from "../../intf/IERC20.sol";
 import {PMMPricing} from "../../lib/PMMPricing.sol";
 
 contract GSPStorage is ReentrancyGuard {
-    using SafeMath for uint256;
 
-    bool internal _DSP_INITIALIZED_;
+    bool internal _GSP_INITIALIZED_;
     bool public _IS_OPEN_TWAP_ = false;
     
     // ============ Core Address ============

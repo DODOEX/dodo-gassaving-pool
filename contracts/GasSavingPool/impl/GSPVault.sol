@@ -9,14 +9,12 @@ pragma solidity 0.8.16;
 pragma experimental ABIEncoderV2;
 
 import {IERC20} from "../../intf/IERC20.sol";
-import {SafeMath} from "../../lib/SafeMath.sol";
 import {DecimalMath} from "../../lib/DecimalMath.sol";
 import {PMMPricing} from "../../lib/PMMPricing.sol";
 import {SafeERC20} from "../../lib/SafeERC20.sol";
 import {GSPStorage} from "./GSPStorage.sol";
 
 contract GSPVault is GSPStorage {
-    using SafeMath for uint256;
     using SafeERC20 for IERC20;
 
     // ============ Modifiers ============
@@ -51,11 +49,11 @@ contract GSPVault is GSPStorage {
     // ============ Asset In ============
 
     function getBaseInput() public view returns (uint256 input) {
-        return _BASE_TOKEN_.balanceOf(address(this)).sub(uint256(_BASE_RESERVE_)).sub(uint256(_MT_FEE_BASE_));
+        return _BASE_TOKEN_.balanceOf(address(this)) - uint256(_BASE_RESERVE_) - uint256(_MT_FEE_BASE_);
     }
 
     function getQuoteInput() public view returns (uint256 input) {
-        return _QUOTE_TOKEN_.balanceOf(address(this)).sub(uint256(_QUOTE_RESERVE_)).sub(uint256(_MT_FEE_QUOTE_));
+        return _QUOTE_TOKEN_.balanceOf(address(this)) - uint256(_QUOTE_RESERVE_) - uint256(_MT_FEE_QUOTE_);
     }
 
     // ============ TWAP UPDATE ===========
@@ -80,8 +78,8 @@ contract GSPVault is GSPStorage {
     }
 
     function _sync() internal {
-        uint256 baseBalance = _BASE_TOKEN_.balanceOf(address(this)).sub(uint256(_MT_FEE_BASE_));
-        uint256 quoteBalance = _QUOTE_TOKEN_.balanceOf(address(this)).sub(uint256(_MT_FEE_QUOTE_));
+        uint256 baseBalance = _BASE_TOKEN_.balanceOf(address(this)) - uint256(_MT_FEE_BASE_);
+        uint256 quoteBalance = _QUOTE_TOKEN_.balanceOf(address(this)) - uint256(_MT_FEE_QUOTE_);
         require(baseBalance <= type(uint112).max && quoteBalance <= type(uint112).max, "OVERFLOW");
         if (baseBalance != _BASE_RESERVE_) {
             _BASE_RESERVE_ = uint112(baseBalance);
@@ -112,7 +110,7 @@ contract GSPVault is GSPStorage {
 
     function setNewPrice(uint256 i) external onlyMaintainer {
         // the difference between i and _I_ should be less than priceLimit
-        require((_I_.sub(i).mul(1e6).div(_I_)) <= _PRICE_LIMIT_, "EXCEED_PRICE_LIMIT");
+        require(((_I_ - i) * 1e6 / _I_) <= _PRICE_LIMIT_, "EXCEED_PRICE_LIMIT");
         _I_ = i;
     }
 
@@ -154,8 +152,8 @@ contract GSPVault is GSPStorage {
     function transfer(address to, uint256 amount) public returns (bool) {
         require(amount <= _SHARES_[msg.sender], "BALANCE_NOT_ENOUGH");
 
-        _SHARES_[msg.sender] = _SHARES_[msg.sender].sub(amount);
-        _SHARES_[to] = _SHARES_[to].add(amount);
+        _SHARES_[msg.sender] = _SHARES_[msg.sender] - (amount);
+        _SHARES_[to] = _SHARES_[to] + amount;
         emit Transfer(msg.sender, to, amount);
         return true;
     }
@@ -183,9 +181,9 @@ contract GSPVault is GSPStorage {
         require(amount <= _SHARES_[from], "BALANCE_NOT_ENOUGH");
         require(amount <= _ALLOWED_[from][msg.sender], "ALLOWANCE_NOT_ENOUGH");
 
-        _SHARES_[from] = _SHARES_[from].sub(amount);
-        _SHARES_[to] = _SHARES_[to].add(amount);
-        _ALLOWED_[from][msg.sender] = _ALLOWED_[from][msg.sender].sub(amount);
+        _SHARES_[from] = _SHARES_[from] - amount;
+        _SHARES_[to] = _SHARES_[to] + amount;
+        _ALLOWED_[from][msg.sender] = _ALLOWED_[from][msg.sender] - amount;
         emit Transfer(from, to, amount);
         return true;
     }
@@ -221,15 +219,15 @@ contract GSPVault is GSPStorage {
 
     function _mint(address user, uint256 value) internal {
         require(value > 1000, "MINT_AMOUNT_NOT_ENOUGH");
-        _SHARES_[user] = _SHARES_[user].add(value);
-        totalSupply = totalSupply.add(value);
+        _SHARES_[user] = _SHARES_[user] + value;
+        totalSupply = totalSupply + value;
         emit Mint(user, value);
         emit Transfer(address(0), user, value);
     }
 
     function _burn(address user, uint256 value) internal {
-        _SHARES_[user] = _SHARES_[user].sub(value);
-        totalSupply = totalSupply.sub(value);
+        _SHARES_[user] = _SHARES_[user] - value;
+        totalSupply = totalSupply - value;
         emit Burn(user, value);
         emit Transfer(user, address(0), value);
     }

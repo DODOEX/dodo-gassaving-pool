@@ -8,7 +8,7 @@
 pragma solidity 0.8.16;
 pragma experimental ABIEncoderV2;
 
-interface IDSPAdvanced {
+interface IGSP {
     function init(
         address maintainer,
         address baseTokenAddress,

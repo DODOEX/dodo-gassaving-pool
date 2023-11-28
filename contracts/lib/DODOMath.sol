@@ -1,15 +1,9 @@
-/*
-
-    Copyright 2020 DODO ZOO.
-    SPDX-License-Identifier: Apache-2.0
-
-*/
-
+// SPDX-License-Identifier: BUSL-1.1
 pragma solidity 0.8.16;
 pragma experimental ABIEncoderV2;
 
-import {SafeMath} from "./SafeMath.sol";
 import {DecimalMath} from "./DecimalMath.sol";
+import {Math} from "@openzeppelin/contracts/utils/math/Math.sol";
 
 /**
  * @title DODOMath
@@ -18,8 +12,7 @@ import {DecimalMath} from "./DecimalMath.sol";
  * @notice Functions for complex calculating. Including ONE Integration and TWO Quadratic solutions
  */
 library DODOMath {
-    using SafeMath for uint256;
-
+    using Math for uint256;
     /*
         Integrate dodo curve from V1 to V2
         require V0>=V1>=V2>0
@@ -41,13 +34,13 @@ library DODOMath {
         uint256 k
     ) internal pure returns (uint256) {
         require(V0 > 0, "TARGET_IS_ZERO");
-        uint256 fairAmount = i.mul(V1.sub(V2)); // i*delta
+        uint256 fairAmount = i * (V1 - V2); // i*delta
         if (k == 0) {
-            return fairAmount.div(DecimalMath.ONE);
+            return fairAmount / DecimalMath.ONE;
         }
-        uint256 V0V0V1V2 = DecimalMath.divFloor(V0.mul(V0).div(V1), V2);
+        uint256 V0V0V1V2 = DecimalMath.divFloor(V0 * V0 / V1, V2);
         uint256 penalty = DecimalMath.mulFloor(k, V0V0V1V2); // k(V0^2/V1/V2)
-        return DecimalMath.ONE.sub(k).add(penalty).mul(fairAmount).div(DecimalMath.ONE2);
+        return (DecimalMath.ONE - k + penalty) * fairAmount / DecimalMath.ONE2;
     }
 
     /*
@@ -69,7 +62,7 @@ library DODOMath {
         uint256 k
     ) internal pure returns (uint256) {
         if (k == 0) {
-            return V1.add(DecimalMath.mulFloor(i, delta));
+            return V1 + DecimalMath.mulFloor(i, delta);
         }
         // V0 = V1*(1+(sqrt-1)/2k)
         // sqrt = √(1+4kidelta/V1)
@@ -80,16 +73,16 @@ library DODOMath {
             return 0;
         }
         uint256 sqrt;
-        uint256 ki = (4 * k).mul(i);
+        uint256 ki = 4 * k * i;
         if (ki == 0) {
             sqrt = DecimalMath.ONE;
         } else if ((ki * delta) / ki == delta) {
-            sqrt = (ki * delta).div(V1).add(DecimalMath.ONE2).sqrt();
+            sqrt =((ki * delta) / V1  + DecimalMath.ONE2).sqrt();
         } else {
-            sqrt = ki.div(V1).mul(delta).add(DecimalMath.ONE2).sqrt();
+            sqrt = (ki / V1 * delta + DecimalMath.ONE2).sqrt();
         }
         uint256 premium =
-            DecimalMath.divFloor(sqrt.sub(DecimalMath.ONE), k * 2).add(DecimalMath.ONE);
+            DecimalMath.divFloor(sqrt - DecimalMath.ONE, k * 2) + DecimalMath.ONE;
         // V0 is greater than or equal to V1 according to the solution
         return DecimalMath.mulFloor(V1, premium);
     }
@@ -132,6 +125,7 @@ library DODOMath {
         }
 
         if (k == 0) {
+            // why v1
             return DecimalMath.mulFloor(i, delta) > V1 ? V1 : DecimalMath.mulFloor(i, delta);
         }
 
@@ -143,15 +137,15 @@ library DODOMath {
             // Q1-Q2 = Q1*(1-1/(1+temp)) = Q1*(temp/(1+temp))
             // uint256 temp = i.mul(delta).mul(V1).div(V0.mul(V0));
             uint256 temp;
-            uint256 idelta = i.mul(delta);
+            uint256 idelta = i * (delta);
             if (idelta == 0) {
                 temp = 0;
             } else if ((idelta * V1) / idelta == V1) {
-                temp = (idelta * V1).div(V0.mul(V0));
+                temp = (idelta * V1) / (V0 * (V0));
             } else {
-                temp = delta.mul(V1).div(V0).mul(i).div(V0);
+                temp = delta * (V1) / (V0) * (i) / (V0);
             }
-            return V1.mul(temp).div(temp.add(DecimalMath.ONE));
+            return V1 * (temp) / (temp + (DecimalMath.ONE));
         }
 
         // calculate -b value and sig
@@ -161,8 +155,8 @@ library DODOMath {
         // bAbs = abs(part1-part2)
         // if part1>part2 => b is negative => bSig is false
         // if part2>part1 => b is positive => bSig is true
-        uint256 part2 = k.mul(V0).div(V1).mul(V0).add(i.mul(delta)); // kQ0^2/Q1-i*deltaB
-        uint256 bAbs = DecimalMath.ONE.sub(k).mul(V1); // (1-k)Q1
+        uint256 part2 = k * (V0) / (V1) * (V0) + (i * (delta)); // kQ0^2/Q1-i*deltaB
+        uint256 bAbs = (DecimalMath.ONE - k) * (V1); // (1-k)Q1
 
         bool bSig;
         if (bAbs >= part2) {
@@ -172,23 +166,19 @@ library DODOMath {
             bAbs = part2 - bAbs;
             bSig = true;
         }
-        bAbs = bAbs.div(DecimalMath.ONE);
+        bAbs = bAbs / (DecimalMath.ONE);
 
         // calculate sqrt
-        uint256 squareRoot =
-            DecimalMath.mulFloor(
-                DecimalMath.ONE.sub(k).mul(4),
-                DecimalMath.mulFloor(k, V0).mul(V0)
-            ); // 4(1-k)kQ0^2
-        squareRoot = bAbs.mul(bAbs).add(squareRoot).sqrt(); // sqrt(b*b+4(1-k)kQ0*Q0)
+        uint256 squareRoot = DecimalMath.mulFloor((DecimalMath.ONE - k) * (4), DecimalMath.mulFloor(k, V0) * (V0)); // 4(1-k)kQ0^2
+        squareRoot = Math.sqrt((bAbs * bAbs) + squareRoot); // sqrt(b*b+4(1-k)kQ0*Q0)
 
         // final res
-        uint256 denominator = DecimalMath.ONE.sub(k).mul(2); // 2(1-k)
+        uint256 denominator = (DecimalMath.ONE - k) * 2; // 2(1-k)
         uint256 numerator;
         if (bSig) {
-            numerator = squareRoot.sub(bAbs);
+            numerator = squareRoot - bAbs;
         } else {
-            numerator = bAbs.add(squareRoot);
+            numerator = bAbs + squareRoot;
         }
 
         uint256 V2 = DecimalMath.divCeil(numerator, denominator);
