@@ -5,7 +5,7 @@
 
 */
 
-pragma solidity 0.7.5;
+pragma solidity 0.8.16;
 pragma experimental ABIEncoderV2;
 
 import {DSPVault} from "./DSPVault.sol";
@@ -47,7 +47,7 @@ contract DSPTrader is DSPVault {
 
         // update TARGET
         if (_RState_ != uint32(newRState)) {
-            require(newBaseTarget <= uint112(-1), "OVERFLOW");
+            require(newBaseTarget <= type(uint112).max, "OVERFLOW");
             _BASE_TARGET_ = uint112(newBaseTarget);
             _RState_ = uint32(newRState);
             emit RChange(newRState);
@@ -81,7 +81,7 @@ contract DSPTrader is DSPVault {
 
         // update TARGET
         if (_RState_ != uint32(newRState)) {
-            require(newQuoteTarget <= uint112(-1), "OVERFLOW");
+            require(newQuoteTarget <= type(uint112).max, "OVERFLOW");
             _QUOTE_TARGET_ = uint112(newQuoteTarget);
             _RState_ = uint32(newRState);
             emit RChange(newRState);
@@ -137,7 +137,7 @@ contract DSPTrader is DSPVault {
 
             _transferBaseOut(_MAINTAINER_, mtFee);
             if (_RState_ != uint32(newRState)) {
-                require(newQuoteTarget <= uint112(-1), "OVERFLOW");
+                require(newQuoteTarget <= type(uint112).max, "OVERFLOW");
                 _QUOTE_TARGET_ = uint112(newQuoteTarget);
                 _RState_ = uint32(newRState);
                 emit RChange(newRState);
@@ -169,7 +169,7 @@ contract DSPTrader is DSPVault {
 
             _transferQuoteOut(_MAINTAINER_, mtFee);
             if (_RState_ != uint32(newRState)) {
-                require(newBaseTarget <= uint112(-1), "OVERFLOW");
+                require(newBaseTarget <= type(uint112).max, "OVERFLOW");
                 _BASE_TARGET_ = uint112(newBaseTarget);
                 _RState_ = uint32(newRState);
                 emit RChange(newRState);

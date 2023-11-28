@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.7.5;
+pragma solidity 0.8.16;
 
 import "../lib/forge-std/src/Script.sol";
 import "../lib/forge-std/src/console.sol";
 
-import {DSPAdvanced} from "../contracts/DSPAdvanced/impl/DSPAdvanced.sol";
+import {DSPAdvanced} from "../contracts/GasSavingPool/impl/DSPAdvanced.sol";
 
 
 contract Deploy is Script {

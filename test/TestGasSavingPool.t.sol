@@ -1,19 +1,19 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.7.5;
+pragma solidity 0.8.16;
 pragma abicoder v2;
 
 import {Test, console} from "forge-std/Test.sol";
 import {Deploy} from "../scripts/Deploy.s.sol";
 import {DeployDSP} from "../scripts/DeployDSP.s.sol";
-import {DSPAdvanced} from "../contracts/DSPAdvanced/impl/DSPAdvanced.sol";
+import {DSPAdvanced} from "../contracts/GasSavingPool/impl/DSPAdvanced.sol";
 import {DSP} from "../contracts/DODOStablePool/impl/DSP.sol";
 import {PMMPricing} from "../contracts/lib/PMMPricing.sol";
 import {SafeMath} from "../contracts/lib/SafeMath.sol";
 import {IERC20} from "../contracts/intf/IERC20.sol";
 
 
-contract TestDSPAdvanced is Test {
+contract TestGasSavingPool is Test {
     using SafeMath for uint256;
     // DAI - USDC
     DSPAdvanced dspAdvanced; 
@@ -257,7 +257,6 @@ contract TestDSPAdvanced is Test {
         (uint256 baseReserve2, uint256 quoteReserve2) = dsp.getVaultReserve();
         console.log("Check reserve: baseReserve, quoteReserve");
         console.log("dspAdvanced:   ", baseReserve1, quoteReserve1);
-        console.log("mtFee:         ", dspAdvanced._MT_FEE_BASE_(), dspAdvanced._MT_FEE_QUOTE_());
         console.log("dsp:           ", baseReserve2, quoteReserve2);
 
         // burn shares

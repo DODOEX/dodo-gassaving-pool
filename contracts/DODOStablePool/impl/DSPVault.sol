@@ -5,7 +5,7 @@
 
 */
 
-pragma solidity 0.7.5;
+pragma solidity 0.8.16;
 pragma experimental ABIEncoderV2;
 
 import {IERC20} from "../../intf/IERC20.sol";
@@ -69,7 +69,7 @@ contract DSPVault is DSPStorage {
     // ============ Set States ============
 
     function _setReserve(uint256 baseReserve, uint256 quoteReserve) internal {
-        require(baseReserve <= uint112(-1) && quoteReserve <= uint112(-1), "OVERFLOW");
+        require(baseReserve <= type(uint112).max && quoteReserve <= type(uint112).max, "OVERFLOW");
         _BASE_RESERVE_ = uint112(baseReserve);
         _QUOTE_RESERVE_ = uint112(quoteReserve);
 
@@ -79,7 +79,7 @@ contract DSPVault is DSPStorage {
     function _sync() internal {
         uint256 baseBalance = _BASE_TOKEN_.balanceOf(address(this));
         uint256 quoteBalance = _QUOTE_TOKEN_.balanceOf(address(this));
-        require(baseBalance <= uint112(-1) && quoteBalance <= uint112(-1), "OVERFLOW");
+        require(baseBalance <= type(uint112).max && quoteBalance <= type(uint112).max, "OVERFLOW");
         if (baseBalance != _BASE_RESERVE_) {
             _BASE_RESERVE_ = uint112(baseBalance);
         }

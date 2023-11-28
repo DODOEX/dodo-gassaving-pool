@@ -5,7 +5,7 @@
 
 */
 
-pragma solidity 0.7.5;
+pragma solidity 0.8.16;
 pragma experimental ABIEncoderV2;
 
 import {IFeeRateModel} from "../../lib/FeeRateModel.sol";
@@ -77,7 +77,7 @@ contract DSP is DSPTrader, DSPFunding {
     }
 
     function addressToShortString(address _addr) public pure returns (string memory) {
-        bytes32 value = bytes32(uint256(_addr));
+        bytes32 value = bytes32(uint256(uint160(_addr)));
         bytes memory alphabet = "0123456789abcdef";
 
         bytes memory str = new bytes(8);
