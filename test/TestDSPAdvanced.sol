@@ -272,6 +272,31 @@ contract TestDSPAdvanced is Test {
 
 
     function test_Flashloan() public {
-        
+        // buy shares
+        vm.startPrank(DAI_WHALE);
+        dai.transfer(USER, 2 * (BASE_RESERVE + BASE_INPUT));
+        vm.stopPrank();
+        vm.startPrank(USDC_WHALE);
+        usdc.transfer(USER, 2 * QUOTE_RESERVE);
+        vm.stopPrank();
+
+        vm.startPrank(USER);
+        dai.transfer(address(dspAdvanced), BASE_RESERVE);
+        usdc.transfer(address(dspAdvanced), QUOTE_RESERVE);
+        (uint256 shares1, uint256 baseInput1, uint256 quoteInput1) = dspAdvanced.buyShares(USER);
+        dai.transfer(address(dsp), BASE_RESERVE);
+        usdc.transfer(address(dsp), QUOTE_RESERVE);
+        (uint256 shares2, uint256 baseInput2, uint256 quoteInput2) = dsp.buyShares(USER);
+        console.log("Buy shares: share, baseInput, quoteInput");
+        console.log("dspAdvanced:   ", shares1, baseInput1, quoteInput1);
+        console.log("dsp:           ", shares2, baseInput2, quoteInput2);
+
+        // flashloan
+        (uint256 amountQuote1, , ,) = dspAdvanced.querySellBase(USER, BASE_INPUT);
+        (uint256 amountQuote2, , ,) = dsp.querySellBase(USER, BASE_INPUT);
+        dai.transfer(address(dspAdvanced), BASE_INPUT);
+        dai.transfer(address(dsp), BASE_INPUT);
+        dspAdvanced.flashLoan(0, amountQuote1, USER, "");
+        dsp.flashLoan(0, amountQuote2, USER, "");
     }
 }
