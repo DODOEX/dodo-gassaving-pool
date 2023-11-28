@@ -5,12 +5,12 @@ pragma solidity 0.8.16;
 import "../lib/forge-std/src/Script.sol";
 import "../lib/forge-std/src/console.sol";
 
-import {DSPAdvanced} from "../contracts/GasSavingPool/impl/DSPAdvanced.sol";
+import {GSP} from "../contracts/GasSavingPool/impl/GSP.sol";
 
 
-contract Deploy is Script {
+contract DeployGSP is Script {
 
-    DSPAdvanced public dspAdvanced;
+    GSP public gsp;
 
     address constant DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
     address constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
@@ -25,12 +25,12 @@ contract Deploy is Script {
     uint256 constant K = 500000000000000;
     bool constant IS_OPEN_TWAP = false;
 
-    function run() public returns (DSPAdvanced){
-        // Deploy DSPAdvanced
-        dspAdvanced = new DSPAdvanced();
+    function run() public returns (GSP){
+        // Deploy GSP
+        gsp = new GSP();
 
-        // init DSPAdvanced
-        dspAdvanced.init(
+        // init GSP
+        gsp.init(
             MAINTAINER,
             BASE_TOKEN_ADDRESS,
             QUOTE_TOKEN_ADDRESS,
@@ -41,6 +41,6 @@ contract Deploy is Script {
             IS_OPEN_TWAP
         );
 
-        return dspAdvanced;
+        return gsp;
     }
 }

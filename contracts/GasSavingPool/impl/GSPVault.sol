@@ -13,9 +13,9 @@ import {SafeMath} from "../../lib/SafeMath.sol";
 import {DecimalMath} from "../../lib/DecimalMath.sol";
 import {PMMPricing} from "../../lib/PMMPricing.sol";
 import {SafeERC20} from "../../lib/SafeERC20.sol";
-import {DSPStorage} from "./DSPStorage.sol";
+import {GSPStorage} from "./GSPStorage.sol";
 
-contract DSPVault is DSPStorage {
+contract GSPVault is GSPStorage {
     using SafeMath for uint256;
     using SafeERC20 for IERC20;
 

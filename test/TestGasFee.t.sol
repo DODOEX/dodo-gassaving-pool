@@ -5,7 +5,6 @@ pragma solidity 0.8.16;
 import {Test, console} from "forge-std/Test.sol";
 
 import {StableSwap} from "../scripts/StableSwap.s.sol";
-import {Deploy} from "../scripts/Deploy.s.sol";
 
 import {IERC20} from "../contracts/intf/IERC20.sol";
 
@@ -32,7 +31,7 @@ contract TestGasFee is Test {
         vm.startPrank(DAI_WHALE);
         dai.approve(address(stableSwap), type(uint256).max);
         uint256 amountOut1 = stableSwap.dsp_sellBase(DAI, 1e18, address(this));
-        uint256 amountOut2 = stableSwap.dspAdvanced_sellBase(DAI, 1e18, address(this));
+        uint256 amountOut2 = stableSwap.gsp_sellBase(DAI, 1e18, address(this));
         uint256 amountOut3 = stableSwap.ogp_sellBase(DAI, 1e18, address(this));
         vm.stopPrank();
 
@@ -42,7 +41,7 @@ contract TestGasFee is Test {
         vm.stopPrank();
         
         console.log("DSP: receive USDT amount", amountOut1);
-        console.log("DSPAdvanced: receive USDC amount", amountOut2);
+        console.log("GSP: receive USDC amount", amountOut2);
         console.log("OGP: receive USDC amount", amountOut3);
         console.log("UniV3: receive USDT amount", amountOut4);
     }

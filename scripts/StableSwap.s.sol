@@ -5,10 +5,10 @@ pragma abicoder v2;
 import "../lib/forge-std/src/Script.sol";
 import "../lib/forge-std/src/console.sol";
 
-import {Deploy} from "../scripts/Deploy.s.sol";
+import {DeployGSP} from "../scripts/DeployGSP.s.sol";
 
 import {OGP} from "../contracts/OptimalGasPool/impl/OGP.sol";
-import {DSPAdvanced} from "../contracts/GasSavingPool/impl/DSPAdvanced.sol";
+import {GSP} from "../contracts/GasSavingPool/impl/GSP.sol";
 import {IDSP} from "../contracts/DODOStablePool/intf/IDSP.sol";
 import {ISwapRouter} from "../contracts/UniV3/intf/ISwapRouter.sol";
 import {IERC20} from "../contracts/intf/IERC20.sol";
@@ -27,8 +27,8 @@ contract StableSwap is Script {
     address constant DAI_WHALE = 0x25B313158Ce11080524DcA0fD01141EeD5f94b81;
     address LP = vm.addr(1);
     
-    Deploy deploy = new Deploy();
-    DSPAdvanced dspAdvanced = deploy.run(); // DAI-USDC
+    DeployGSP deployGSP = new DeployGSP();
+    GSP gsp = deployGSP.run(); // DAI-USDC
     ISwapRouter uniV3Router = ISwapRouter(UniV3_ROUTER);
 
     IDSP dsp = IDSP(0x3058EF90929cb8180174D74C507176ccA6835D73); // DAI-USDT
@@ -36,7 +36,7 @@ contract StableSwap is Script {
     OGP ogp = new OGP(); // USDC-USDT
 
     function dspAdvanced_addLiquidity() external {
-        // provide liquidity to DSPAdvanced
+        // provide liquidity to GSP
         (uint256 baseReserve, uint256 quoteReserve) = dsp.getVaultReserve();
 
         // whales send tokens to LP
@@ -48,15 +48,15 @@ contract StableSwap is Script {
         usdc.transfer(LP, quoteReserve);
         vm.stopPrank();
 
-        // LP provide liquidity to DSPAdvanced
+        // LP provide liquidity to GSP
         vm.startPrank(LP);
-        dai.transfer(address(dspAdvanced), baseReserve);
-        usdc.transfer(address(dspAdvanced), quoteReserve);
-        dspAdvanced.buyShares(msg.sender);
+        dai.transfer(address(gsp), baseReserve);
+        usdc.transfer(address(gsp), quoteReserve);
+        gsp.buyShares(msg.sender);
         vm.stopPrank();
         
-        console.log("baseReserve: %s", dspAdvanced._BASE_RESERVE_());
-        console.log("quoteReserve: %s", dspAdvanced._QUOTE_RESERVE_());
+        console.log("baseReserve: %s", gsp._BASE_RESERVE_());
+        console.log("quoteReserve: %s", gsp._QUOTE_RESERVE_());
     }
 
 
@@ -66,10 +66,10 @@ contract StableSwap is Script {
         return dsp.sellBase(to);
     }
 
-    function dspAdvanced_sellBase(address tokenIn, uint256 amount, address to) external returns (uint256) {
+    function gsp_sellBase(address tokenIn, uint256 amount, address to) external returns (uint256) {
         IERC20(tokenIn).transferFrom(msg.sender, address(this), amount);
-        IERC20(tokenIn).transfer(address(dspAdvanced), amount);
-        return dspAdvanced.sellBase(to);
+        IERC20(tokenIn).transfer(address(gsp), amount);
+        return gsp.sellBase(to);
     }
 
     function uniV3_exactInputSingle(address tokenIn, address tokenOut, uint24 fee, uint amountIn) external returns (uint256) {

@@ -9,12 +9,12 @@
 pragma solidity 0.8.16;
 pragma experimental ABIEncoderV2;
 
-import {DSPVault} from "./DSPVault.sol";
+import {GSPVault} from "./GSPVault.sol";
 import {DecimalMath} from "../../lib/DecimalMath.sol";
 import {SafeMath} from "../../lib/SafeMath.sol";
 import {IDODOCallee} from "../../intf/IDODOCallee.sol";
 
-contract DSPFunding is DSPVault {
+contract GSPFunding is GSPVault {
     using SafeMath for uint256;
     // ============ Events ============
 

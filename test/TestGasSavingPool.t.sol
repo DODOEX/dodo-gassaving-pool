@@ -4,9 +4,9 @@ pragma solidity 0.8.16;
 pragma abicoder v2;
 
 import {Test, console} from "forge-std/Test.sol";
-import {Deploy} from "../scripts/Deploy.s.sol";
+import {DeployGSP} from "../scripts/DeployGSP.s.sol";
 import {DeployDSP} from "../scripts/DeployDSP.s.sol";
-import {DSPAdvanced} from "../contracts/GasSavingPool/impl/DSPAdvanced.sol";
+import {GSP} from "../contracts/GasSavingPool/impl/GSP.sol";
 import {DSP} from "../contracts/DODOStablePool/impl/DSP.sol";
 import {PMMPricing} from "../contracts/lib/PMMPricing.sol";
 import {SafeMath} from "../contracts/lib/SafeMath.sol";
@@ -16,7 +16,7 @@ import {IERC20} from "../contracts/intf/IERC20.sol";
 contract TestGasSavingPool is Test {
     using SafeMath for uint256;
     // DAI - USDC
-    DSPAdvanced dspAdvanced; 
+    GSP gsp; 
     DSP dsp;
 
     address constant USDC_WHALE = 0x51eDF02152EBfb338e03E30d65C15fBf06cc9ECC;
@@ -38,9 +38,9 @@ contract TestGasSavingPool is Test {
 
 
     function setUp() public {
-        // Deploy and Init DSPAdvanced
-        Deploy deploy = new Deploy();
-        dspAdvanced = deploy.run();
+        // Deploy and Init GSP
+        DeployGSP deployGSP = new DeployGSP();
+        gsp = deployGSP.run();
         DeployDSP deployDSP = new DeployDSP();
         dsp = deployDSP.run();
     }
@@ -48,7 +48,7 @@ contract TestGasSavingPool is Test {
     function test_BuySharesAndSellShares() public {
         uint256 loop = 2;
         // check PMMState
-        dspAdvanced.getPMMState();
+        gsp.getPMMState();
         dsp.getPMMState();
 
         // buy shares
@@ -69,25 +69,25 @@ contract TestGasSavingPool is Test {
 
         for (uint256 i = 0; i < loop; i++) {
             // buy shares
-            dai.transfer(address(dspAdvanced), BASE_RESERVE);
-            usdc.transfer(address(dspAdvanced), QUOTE_RESERVE);
-            (shares1, baseInput1, quoteInput1) = dspAdvanced.buyShares(USER);
+            dai.transfer(address(gsp), BASE_RESERVE);
+            usdc.transfer(address(gsp), QUOTE_RESERVE);
+            (shares1, baseInput1, quoteInput1) = gsp.buyShares(USER);
             dai.transfer(address(dsp), BASE_RESERVE);
             usdc.transfer(address(dsp), QUOTE_RESERVE);
             (shares2, baseInput2, quoteInput2) = dsp.buyShares(USER);
             console.log("Buy shares: share, baseInput, quoteInput");
-            console.log("dspAdvanced:   ", shares1, baseInput1, quoteInput1);
-            console.log("total shares:  ", dspAdvanced.balanceOf(USER));
-            console.log("dsp:           ", shares2, baseInput2, quoteInput2);
+            console.log("gsp    ", shares1, baseInput1, quoteInput1);
+            console.log("total shares:  ", gsp.balanceOf(USER));
+            console.log("dsp:   ", shares2, baseInput2, quoteInput2);
             console.log("total shares:  ", dsp.balanceOf(USER));
         }
         // sell shares
-        (uint256 baseAmount1, uint256 quoteAmount1) = dspAdvanced.sellShares(dspAdvanced.balanceOf(USER), USER, 0, 0, "", block.timestamp);
+        (uint256 baseAmount1, uint256 quoteAmount1) = gsp.sellShares(gsp.balanceOf(USER), USER, 0, 0, "", block.timestamp);
         (uint256 baseAmount2, uint256 quoteAmount2) = dsp.sellShares(dsp.balanceOf(USER), USER, 0, 0, "", block.timestamp);
         console.log("Sell shares: baseAmount, quoteAmount");
-        console.log("dspAdvanced:   ", baseAmount1, quoteAmount1);
-        console.log("total shares:  ", dspAdvanced.balanceOf(USER));
-        console.log("dsp:           ", baseAmount2, quoteAmount2);
+        console.log("gsp:   ", baseAmount1, quoteAmount1);
+        console.log("total shares:  ", gsp.balanceOf(USER));
+        console.log("dsp:   ", baseAmount2, quoteAmount2);
         console.log("total shares:  ", dsp.balanceOf(USER));
     }
 
@@ -103,15 +103,15 @@ contract TestGasSavingPool is Test {
         vm.stopPrank();
 
         vm.startPrank(USER);
-        dai.transfer(address(dspAdvanced), BASE_RESERVE);
-        usdc.transfer(address(dspAdvanced), QUOTE_RESERVE);
-        (uint256 shares1, uint256 baseInput1, uint256 quoteInput1) = dspAdvanced.buyShares(USER);
+        dai.transfer(address(gsp), BASE_RESERVE);
+        usdc.transfer(address(gsp), QUOTE_RESERVE);
+        (uint256 shares1, uint256 baseInput1, uint256 quoteInput1) = gsp.buyShares(USER);
         dai.transfer(address(dsp), BASE_RESERVE);
         usdc.transfer(address(dsp), QUOTE_RESERVE);
         (uint256 shares2, uint256 baseInput2, uint256 quoteInput2) = dsp.buyShares(USER);
         console.log("Buy shares: share, baseInput, quoteInput");
-        console.log("dspAdvanced:   ", shares1, baseInput1, quoteInput1);
-        console.log("dsp:           ", shares2, baseInput2, quoteInput2);
+        console.log("gsp:   ", shares1, baseInput1, quoteInput1);
+        console.log("dsp:   ", shares2, baseInput2, quoteInput2);
 
         uint256 receiveQuoteAmount1;
         uint256 receiveQuoteAmount2;
@@ -124,28 +124,28 @@ contract TestGasSavingPool is Test {
         // sellbase
         uint256 mtFeeBefore = usdc.balanceOf(MAINTAINER);
         for (uint i = 0; i < 2; i++) {
-            dai.transfer(address(dspAdvanced), BASE_INPUT);
-            receiveQuoteAmount1 = dspAdvanced.sellBase(USER);
+            dai.transfer(address(gsp), BASE_INPUT);
+            receiveQuoteAmount1 = gsp.sellBase(USER);
             dai.transfer(address(dsp), BASE_INPUT);
             receiveQuoteAmount2 = dsp.sellBase(USER);
             console.log("Sell base: receiveQuoteAmount");
-            console.log("dspAdvanced:   ", receiveQuoteAmount1);
-            console.log("dsp:           ", receiveQuoteAmount2);
+            console.log("gsp:   ", receiveQuoteAmount1);
+            console.log("dsp:   ", receiveQuoteAmount2);
 
             // check baseReserve, quoteReserve
-            (baseReserve1, quoteReserve1) = dspAdvanced.getVaultReserve();
+            (baseReserve1, quoteReserve1) = gsp.getVaultReserve();
             (baseReserve2, quoteReserve2) = dsp.getVaultReserve();
             console.log("Check reserve: baseReserve, quoteReserve");
-            console.log("dspAdvanced:   ", baseReserve1, quoteReserve1);
-            console.log("dsp:           ", baseReserve2, quoteReserve2);
+            console.log("gsp:   ", baseReserve1, quoteReserve1);
+            console.log("dsp:   ", baseReserve2, quoteReserve2);
 
             // check mtFee
-            mtFee1 = dspAdvanced._MT_FEE_QUOTE_();
+            mtFee1 = gsp._MT_FEE_QUOTE_();
             uint256 mtFeeAfter = usdc.balanceOf(MAINTAINER);
             mtFee2 = mtFeeAfter.sub(mtFeeBefore);
             console.log("Check total mtFeeQuote: mtFee");
-            console.log("dspAdvanced:   ", mtFee1);
-            console.log("dsp:           ", mtFee2);
+            console.log("gsp:   ", mtFee1);
+            console.log("dsp:   ", mtFee2);
         }  
     }
 
@@ -161,15 +161,15 @@ contract TestGasSavingPool is Test {
         vm.stopPrank();
 
         vm.startPrank(USER);
-        dai.transfer(address(dspAdvanced), BASE_RESERVE);
-        usdc.transfer(address(dspAdvanced), QUOTE_RESERVE);
-        (uint256 shares1, uint256 baseInput1, uint256 quoteInput1) = dspAdvanced.buyShares(USER);
+        dai.transfer(address(gsp), BASE_RESERVE);
+        usdc.transfer(address(gsp), QUOTE_RESERVE);
+        (uint256 shares1, uint256 baseInput1, uint256 quoteInput1) = gsp.buyShares(USER);
         dai.transfer(address(dsp), BASE_RESERVE);
         usdc.transfer(address(dsp), QUOTE_RESERVE);
         (uint256 shares2, uint256 baseInput2, uint256 quoteInput2) = dsp.buyShares(USER);
         console.log("Buy shares: share, baseInput, quoteInput");
-        console.log("dspAdvanced:   ", shares1, baseInput1, quoteInput1);
-        console.log("dsp:           ", shares2, baseInput2, quoteInput2);
+        console.log("gsp:   ", shares1, baseInput1, quoteInput1);
+        console.log("dsp:   ", shares2, baseInput2, quoteInput2);
 
         uint256 receiveBaseAmount1;
         uint256 receiveBaseAmount2;
@@ -182,35 +182,35 @@ contract TestGasSavingPool is Test {
         // sellquote
         uint256 mtFeeBefore = dai.balanceOf(MAINTAINER);
         for (uint i = 0; i < 2; i++) {
-            usdc.transfer(address(dspAdvanced), QUOTE_INPUT);
-            receiveBaseAmount1 = dspAdvanced.sellQuote(USER);
+            usdc.transfer(address(gsp), QUOTE_INPUT);
+            receiveBaseAmount1 = gsp.sellQuote(USER);
             usdc.transfer(address(dsp), QUOTE_INPUT);
             receiveBaseAmount2 = dsp.sellQuote(USER);
             console.log("Sell quote: receiveBaseAmount");
-            console.log("dspAdvanced:   ", receiveBaseAmount1);
-            console.log("dsp:           ", receiveBaseAmount2);
+            console.log("gsp:   ", receiveBaseAmount1);
+            console.log("dsp:   ", receiveBaseAmount2);
 
             // check baseReserve, quoteReserve
-            (baseReserve1, quoteReserve1) = dspAdvanced.getVaultReserve();
+            (baseReserve1, quoteReserve1) = gsp.getVaultReserve();
             (baseReserve2, quoteReserve2) = dsp.getVaultReserve();
             console.log("Check reserve: baseReserve, quoteReserve");
-            console.log("dspAdvanced:   ", baseReserve1, quoteReserve1);
-            console.log("dsp:           ", baseReserve2, quoteReserve2);
+            console.log("gsp:   ", baseReserve1, quoteReserve1);
+            console.log("dsp:   ", baseReserve2, quoteReserve2);
 
             // check mtFee
-            mtFee1 = dspAdvanced._MT_FEE_BASE_();
+            mtFee1 = gsp._MT_FEE_BASE_();
             uint256 mtFeeAfter = dai.balanceOf(MAINTAINER);
             mtFee2 = mtFeeAfter.sub(mtFeeBefore);
             console.log("Check total mtFeeBase: mtFee");
-            console.log("dspAdvanced:   ", mtFee1);
-            console.log("dsp:           ", mtFee2);
+            console.log("gsp:   ", mtFee1);
+            console.log("dsp:   ", mtFee2);
         }  
     }
 
 
     function test_CompareTwoPool() public {
         // check PMMState
-        dspAdvanced.getPMMState();
+        gsp.getPMMState();
         dsp.getPMMState();
 
         // buy shares
@@ -222,51 +222,51 @@ contract TestGasSavingPool is Test {
         vm.stopPrank();
 
         vm.startPrank(USER);
-        dai.transfer(address(dspAdvanced), BASE_RESERVE);
-        usdc.transfer(address(dspAdvanced), QUOTE_RESERVE);
-        (uint256 shares1, uint256 baseInput1, uint256 quoteInput1) = dspAdvanced.buyShares(USER);
+        dai.transfer(address(gsp), BASE_RESERVE);
+        usdc.transfer(address(gsp), QUOTE_RESERVE);
+        (uint256 shares1, uint256 baseInput1, uint256 quoteInput1) = gsp.buyShares(USER);
         dai.transfer(address(dsp), BASE_RESERVE);
         usdc.transfer(address(dsp), QUOTE_RESERVE);
         (uint256 shares2, uint256 baseInput2, uint256 quoteInput2) = dsp.buyShares(USER);
         vm.stopPrank();
         console.log("Buy shares: share, baseInput, quoteInput");
-        console.log("dspAdvanced:   ", shares1, baseInput1, quoteInput1);
-        console.log("dsp:           ", shares2, baseInput2, quoteInput2);
+        console.log("gsp:   ", shares1, baseInput1, quoteInput1);
+        console.log("dsp:   ", shares2, baseInput2, quoteInput2);
 
         // sellbase and sellquote
         vm.startPrank(USER);
-        dai.transfer(address(dspAdvanced), BASE_INPUT);
-        uint256 receiveQuoteAmount1 = dspAdvanced.sellBase(USER);
+        dai.transfer(address(gsp), BASE_INPUT);
+        uint256 receiveQuoteAmount1 = gsp.sellBase(USER);
         dai.transfer(address(dsp), BASE_INPUT);
         uint256 receiveQuoteAmount2 = dsp.sellBase(USER);
         console.log("Sell Base: receiveQuoteAmount");
-        console.log("dspAdvanced:   ", receiveQuoteAmount1);
-        console.log("dsp:           ", receiveQuoteAmount2);
+        console.log("gsp:   ", receiveQuoteAmount1);
+        console.log("dsp:   ", receiveQuoteAmount2);
  
-        usdc.transfer(address(dspAdvanced), QUOTE_INPUT);
-        uint256 receiveBaseAmount1 = dspAdvanced.sellQuote(USER);
+        usdc.transfer(address(gsp), QUOTE_INPUT);
+        uint256 receiveBaseAmount1 = gsp.sellQuote(USER);
         usdc.transfer(address(dsp), QUOTE_INPUT);
         uint256 receiveBaseAmount2 = dsp.sellQuote(USER);
         console.log("Sell Quote: receiveBaseAmount");
-        console.log("dspAdvanced:   ", receiveBaseAmount1);
-        console.log("dsp:           ", receiveBaseAmount2);
+        console.log("gsp:   ", receiveBaseAmount1);
+        console.log("dsp:   ", receiveBaseAmount2);
         vm.stopPrank();
 
         // check baseReserve, quoteReserve
-        (uint256 baseReserve1, uint256 quoteReserve1) = dspAdvanced.getVaultReserve();
+        (uint256 baseReserve1, uint256 quoteReserve1) = gsp.getVaultReserve();
         (uint256 baseReserve2, uint256 quoteReserve2) = dsp.getVaultReserve();
         console.log("Check reserve: baseReserve, quoteReserve");
-        console.log("dspAdvanced:   ", baseReserve1, quoteReserve1);
-        console.log("dsp:           ", baseReserve2, quoteReserve2);
+        console.log("gsp:   ", baseReserve1, quoteReserve1);
+        console.log("dsp:   ", baseReserve2, quoteReserve2);
 
         // burn shares
         vm.startPrank(USER);
-        (uint256 baseAmount1, uint256 quoteAmount1) = dspAdvanced.sellShares(dspAdvanced.balanceOf(USER), USER, 0, 0, "", block.timestamp);
+        (uint256 baseAmount1, uint256 quoteAmount1) = gsp.sellShares(gsp.balanceOf(USER), USER, 0, 0, "", block.timestamp);
         (uint256 baseAmount2, uint256 quoteAmount2) = dsp.sellShares(dsp.balanceOf(USER), USER, 0, 0, "", block.timestamp);
         vm.stopPrank();
         console.log("Sell shares: baseAmount, quoteAmount");
-        console.log("dspAdvanced:   ", baseAmount1, quoteAmount1);
-        console.log("dsp:           ", baseAmount2, quoteAmount2);
+        console.log("gsp:   ", baseAmount1, quoteAmount1);
+        console.log("dsp:   ", baseAmount2, quoteAmount2);
     } 
 
 
@@ -280,22 +280,22 @@ contract TestGasSavingPool is Test {
         vm.stopPrank();
 
         vm.startPrank(USER);
-        dai.transfer(address(dspAdvanced), BASE_RESERVE);
-        usdc.transfer(address(dspAdvanced), QUOTE_RESERVE);
-        (uint256 shares1, uint256 baseInput1, uint256 quoteInput1) = dspAdvanced.buyShares(USER);
+        dai.transfer(address(gsp), BASE_RESERVE);
+        usdc.transfer(address(gsp), QUOTE_RESERVE);
+        (uint256 shares1, uint256 baseInput1, uint256 quoteInput1) = gsp.buyShares(USER);
         dai.transfer(address(dsp), BASE_RESERVE);
         usdc.transfer(address(dsp), QUOTE_RESERVE);
         (uint256 shares2, uint256 baseInput2, uint256 quoteInput2) = dsp.buyShares(USER);
         console.log("Buy shares: share, baseInput, quoteInput");
-        console.log("dspAdvanced:   ", shares1, baseInput1, quoteInput1);
-        console.log("dsp:           ", shares2, baseInput2, quoteInput2);
+        console.log("gsp:   ", shares1, baseInput1, quoteInput1);
+        console.log("dsp:   ", shares2, baseInput2, quoteInput2);
 
         // flashloan
-        (uint256 amountQuote1, , ,) = dspAdvanced.querySellBase(USER, BASE_INPUT);
+        (uint256 amountQuote1, , ,) = gsp.querySellBase(USER, BASE_INPUT);
         (uint256 amountQuote2, , ,) = dsp.querySellBase(USER, BASE_INPUT);
-        dai.transfer(address(dspAdvanced), BASE_INPUT);
+        dai.transfer(address(gsp), BASE_INPUT);
         dai.transfer(address(dsp), BASE_INPUT);
-        dspAdvanced.flashLoan(0, amountQuote1, USER, "");
+        gsp.flashLoan(0, amountQuote1, USER, "");
         dsp.flashLoan(0, amountQuote2, USER, "");
     }
 }

@@ -9,9 +9,9 @@ pragma solidity 0.8.16;
 pragma experimental ABIEncoderV2;
 
 import {IERC20} from "../../intf/IERC20.sol";
-import {DSPTrader} from "./DSPTrader.sol";
-import {DSPFunding} from "./DSPFunding.sol";
-import {DSPVault} from "./DSPVault.sol";
+import {GSPTrader} from "./GSPTrader.sol";
+import {GSPFunding} from "./GSPFunding.sol";
+import {GSPVault} from "./GSPVault.sol";
 
 /**
  * @title DODO StablePool
@@ -19,7 +19,7 @@ import {DSPVault} from "./DSPVault.sol";
  *
  * @notice DODOStablePool initialization
  */
-contract DSPAdvanced is DSPTrader, DSPFunding {
+contract GSP is GSPTrader, GSPFunding {
     function init(
         address maintainer,
         address baseTokenAddress,

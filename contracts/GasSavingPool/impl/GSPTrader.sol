@@ -8,7 +8,7 @@
 pragma solidity 0.8.16;
 pragma experimental ABIEncoderV2;
 
-import {DSPVault} from "./DSPVault.sol";
+import {GSPVault} from "./GSPVault.sol";
 import {SafeMath} from "../../lib/SafeMath.sol";
 import {DecimalMath} from "../../lib/DecimalMath.sol";
 import {PMMPricing} from "../../lib/PMMPricing.sol";
@@ -16,7 +16,7 @@ import {IDODOCallee} from "../../intf/IDODOCallee.sol";
 
 import {console} from "../../../lib/forge-std/src/console.sol";
 
-contract DSPTrader is DSPVault {
+contract GSPTrader is GSPVault {
     using SafeMath for uint256;
 
     // ============ Events ============

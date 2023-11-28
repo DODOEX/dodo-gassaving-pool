@@ -15,7 +15,7 @@ import {DecimalMath} from "../../lib/DecimalMath.sol";
 import {IERC20} from "../../intf/IERC20.sol";
 import {PMMPricing} from "../../lib/PMMPricing.sol";
 
-contract DSPStorage is ReentrancyGuard {
+contract GSPStorage is ReentrancyGuard {
     using SafeMath for uint256;
 
     bool internal _DSP_INITIALIZED_;
