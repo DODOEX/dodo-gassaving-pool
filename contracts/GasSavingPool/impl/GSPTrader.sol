@@ -13,7 +13,6 @@ import {DecimalMath} from "../../lib/DecimalMath.sol";
 import {PMMPricing} from "../../lib/PMMPricing.sol";
 import {IDODOCallee} from "../../intf/IDODOCallee.sol";
 
-import {console} from "../../../lib/forge-std/src/console.sol";
 
 contract GSPTrader is GSPVault {
 
