@@ -43,4 +43,6 @@ contract DeployGSP is Script {
 
         return gsp;
     }
+
+    function testSuccess() public {}
 }
