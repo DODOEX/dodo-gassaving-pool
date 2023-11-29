@@ -75,16 +75,24 @@ contract TestGasSavingPool is Test {
             usdc.transfer(address(dsp), QUOTE_RESERVE);
             (shares2, baseInput2, quoteInput2) = dsp.buyShares(USER);
             assertEq(shares1, shares2, "gsp shares != dsp shares");
+            assertEq(shares1, 1e19);
             assertEq(baseInput1, baseInput2, "gsp baseInput != dsp baseInput");
+            assertEq(baseInput1, 1e19);
             assertEq(quoteInput1, quoteInput2, "gsp quoteInput != dsp quoteInput");
+            assertEq(quoteInput1, 10000000);
             assertEq(gsp.balanceOf(USER), dsp.balanceOf(USER), "gsp total shares != dsp total shares");
+            uint256 totShare = i ==0 ? 1e19 : 2* 1e19;
+            assertEq(gsp.balanceOf(USER), totShare);
         }
         // sell shares
         (uint256 baseAmount1, uint256 quoteAmount1) = gsp.sellShares(gsp.balanceOf(USER), USER, 0, 0, "", block.timestamp);
         (uint256 baseAmount2, uint256 quoteAmount2) = dsp.sellShares(dsp.balanceOf(USER), USER, 0, 0, "", block.timestamp);
         assertEq(baseAmount1, baseAmount2, "gsp baseAmount != dsp baseAmount");
+        assertEq(baseAmount1, 2* 1e19);
         assertEq(quoteAmount1, quoteAmount2, "gsp quoteAmount != dsp quoteAmount");
+        assertEq(quoteAmount1, 20000000);
         assertEq(gsp.balanceOf(USER), dsp.balanceOf(USER), "gsp total shares != dsp total shares");
+        assertEq(gsp.balanceOf(USER), 0);
     }
 
 
@@ -125,18 +133,26 @@ contract TestGasSavingPool is Test {
             dai.transfer(address(dsp), BASE_INPUT);
             receiveQuoteAmount2 = dsp.sellBase(USER);
             assertEq(receiveQuoteAmount1, receiveQuoteAmount2, "gsp receiveQuoteAmount != dsp receiveQuoteAmount");
+            uint256 tmp = i == 0 ? 999935 : 999797;
+            assertEq(receiveQuoteAmount1, tmp);
 
             // check baseReserve, quoteReserve
             (baseReserve1, quoteReserve1) = gsp.getVaultReserve();
             (baseReserve2, quoteReserve2) = dsp.getVaultReserve();
             assertEq(baseReserve1, baseReserve2, "gsp baseReserve != dsp baseReserve");
+            tmp = i == 0 ? 11000000000000000000 : 12000000000000000000;
+            assertEq(baseReserve1, tmp);
             assertEq(quoteReserve1, quoteReserve2, "gsp quoteReserve != dsp quoteReserve");
+            tmp = i == 0 ? 9000056 : 8000250;
+            assertEq(quoteReserve1, tmp);
 
             // check mtFee
             mtFee1 = gsp._MT_FEE_QUOTE_();
             uint256 mtFeeAfter = usdc.balanceOf(MAINTAINER);
             mtFee2 = mtFeeAfter.sub(mtFeeBefore);
             assertEq(mtFee1, mtFee2, "gsp mtFee != dsp mtFee");
+            tmp = i == 0 ? 9 : 18;
+            assertEq(tmp, mtFee1);
         }  
     }
 
@@ -178,18 +194,26 @@ contract TestGasSavingPool is Test {
             usdc.transfer(address(dsp), QUOTE_INPUT);
             receiveBaseAmount2 = dsp.sellQuote(USER);
             assertEq(receiveBaseAmount1, receiveBaseAmount2, "gsp receiveBaseAmount != dsp receiveBaseAmount");
+            uint256 tmp = i == 0 ? 1999730072785929125 : 1998897790924520164 ;
+            assertEq(receiveBaseAmount1, tmp);
 
             // check baseReserve, quoteReserve
             (baseReserve1, quoteReserve1) = gsp.getVaultReserve();
             (baseReserve2, quoteReserve2) = dsp.getVaultReserve();
             assertEq(baseReserve1, baseReserve2, "gsp baseReserve != dsp baseReserve");
+            tmp = i == 0 ? 8000249929713368009 : 6001332149611046822;
+            assertEq(baseReserve1, tmp);
             assertEq(quoteReserve1, quoteReserve2, "gsp quoteReserve != dsp quoteReserve");
+            tmp = i == 0 ? 12000000 : 14000000;
+            assertEq(quoteReserve1, tmp);
 
             // check mtFee
             mtFee1 = gsp._MT_FEE_BASE_();
             uint256 mtFeeAfter = dai.balanceOf(MAINTAINER);
             mtFee2 = mtFeeAfter.sub(mtFeeBefore);
             assertEq(mtFee1, mtFee2, "gsp mtFee != dsp mtFee");
+            tmp = i == 0 ? 19997500702866 : 39986678503889;
+            assertEq(mtFee1, tmp);
         }  
     }
 
@@ -274,6 +298,7 @@ contract TestGasSavingPool is Test {
         (uint256 amountQuote1, , ,) = gsp.querySellBase(USER, BASE_INPUT);
         (uint256 amountQuote2, , ,) = dsp.querySellBase(USER, BASE_INPUT);
         assertEq(amountQuote1, amountQuote2, "amountQuote1 != amountQuote2");
+        assertEq(amountQuote1, 999935);
 
         uint256 quoteBalanceBefore = usdc.balanceOf(USER);
         dai.transfer(address(gsp), BASE_INPUT);

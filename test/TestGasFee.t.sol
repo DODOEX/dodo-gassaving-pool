@@ -33,6 +33,7 @@ contract TestGasFee is Test {
         uint256 amountOut1 = stableSwap.dsp_sellBase(DAI, 1e18, address(this));
         uint256 amountOut2 = stableSwap.gsp_sellBase(DAI, 1e18, address(this));
         uint256 amountOut3 = stableSwap.ogp_sellBase(DAI, 1e18, address(this));
+        uint256 amountOut = stableSwap.gsp_sellBase(DAI, 1e18, address(this));
         vm.stopPrank();
 
         vm.startPrank(USDC_WHALE);
