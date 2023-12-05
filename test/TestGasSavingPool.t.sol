@@ -31,8 +31,8 @@ contract TestGasSavingPool is Test {
 
     // test params
     address constant MAINTAINER = 0x95C4F5b83aA70810D4f142d58e5F7242Bd891CB0;
-    uint256 constant BASE_RESERVE = 10e18; // 10 DAI
-    uint256 constant QUOTE_RESERVE = 10e6; // 10 USDC
+    uint256 constant BASE_RESERVE = 1e19; // 10 DAI
+    uint256 constant QUOTE_RESERVE = 1e7; // 10 USDC
     uint256 constant BASE_INPUT = 1e18; // 1 DAI
     uint256 constant QUOTE_INPUT = 2e6; // 2 USDC
 
@@ -46,7 +46,7 @@ contract TestGasSavingPool is Test {
     }
 
 
-    function test_BuySharesAndSellShares() public {
+    function test_buySharesAndSellShares() public {
         uint256 loop = 2;
         // check PMMState
         gsp.getPMMState();
@@ -74,29 +74,44 @@ contract TestGasSavingPool is Test {
             dai.transfer(address(dsp), BASE_RESERVE);
             usdc.transfer(address(dsp), QUOTE_RESERVE);
             (shares2, baseInput2, quoteInput2) = dsp.buyShares(USER);
+            gsp.getPMMState();
+            dsp.getPMMState();
             assertEq(shares1, shares2, "gsp shares != dsp shares");
             assertEq(shares1, 1e19);
             assertEq(baseInput1, baseInput2, "gsp baseInput != dsp baseInput");
             assertEq(baseInput1, 1e19);
             assertEq(quoteInput1, quoteInput2, "gsp quoteInput != dsp quoteInput");
-            assertEq(quoteInput1, 10000000);
+            assertEq(quoteInput1, 1e7);
             assertEq(gsp.balanceOf(USER), dsp.balanceOf(USER), "gsp total shares != dsp total shares");
-            uint256 totShare = i ==0 ? 1e19 : 2* 1e19;
+            uint256 totShare = i == 0 ? 1e19 : 2 * 1e19;
             assertEq(gsp.balanceOf(USER), totShare);
         }
         // sell shares
-        (uint256 baseAmount1, uint256 quoteAmount1) = gsp.sellShares(gsp.balanceOf(USER), USER, 0, 0, "", block.timestamp);
-        (uint256 baseAmount2, uint256 quoteAmount2) = dsp.sellShares(dsp.balanceOf(USER), USER, 0, 0, "", block.timestamp);
+        (uint256 baseAmount1, uint256 quoteAmount1) = gsp.sellShares(gsp.balanceOf(USER) / 2, USER, 0, 0, "", block.timestamp);
+        (uint256 baseAmount2, uint256 quoteAmount2) = dsp.sellShares(dsp.balanceOf(USER) / 2, USER, 0, 0, "", block.timestamp);
+        gsp.getPMMState();
+        dsp.getPMMState();
         assertEq(baseAmount1, baseAmount2, "gsp baseAmount != dsp baseAmount");
-        assertEq(baseAmount1, 2* 1e19);
+        assertEq(baseAmount1, 1e19);
         assertEq(quoteAmount1, quoteAmount2, "gsp quoteAmount != dsp quoteAmount");
-        assertEq(quoteAmount1, 20000000);
+        assertEq(quoteAmount1, 1e7);
+        assertEq(gsp.balanceOf(USER), dsp.balanceOf(USER), "gsp total shares != dsp total shares");
+        assertEq(gsp.balanceOf(USER), 1e19);
+        // sell shares
+        (baseAmount1, quoteAmount1) = gsp.sellShares(gsp.balanceOf(USER), USER, 0, 0, "", block.timestamp);
+        (baseAmount2, quoteAmount2) = dsp.sellShares(dsp.balanceOf(USER), USER, 0, 0, "", block.timestamp);
+        gsp.getPMMState();
+        dsp.getPMMState();
+        assertEq(baseAmount1, baseAmount2, "gsp baseAmount != dsp baseAmount");
+        assertEq(baseAmount1, 1e19);
+        assertEq(quoteAmount1, quoteAmount2, "gsp quoteAmount != dsp quoteAmount");
+        assertEq(quoteAmount1, 1e7);
         assertEq(gsp.balanceOf(USER), dsp.balanceOf(USER), "gsp total shares != dsp total shares");
         assertEq(gsp.balanceOf(USER), 0);
     }
 
 
-    function test_SellBase() public {
+    function test_sellBase() public {
         uint256 loop = 2;
         // buy shares
         vm.startPrank(DAI_WHALE);
@@ -132,6 +147,8 @@ contract TestGasSavingPool is Test {
             receiveQuoteAmount1 = gsp.sellBase(USER);
             dai.transfer(address(dsp), BASE_INPUT);
             receiveQuoteAmount2 = dsp.sellBase(USER);
+            gsp.getPMMState();
+            dsp.getPMMState();
             assertEq(receiveQuoteAmount1, receiveQuoteAmount2, "gsp receiveQuoteAmount != dsp receiveQuoteAmount");
             uint256 tmp = i == 0 ? 999935 : 999797;
             assertEq(receiveQuoteAmount1, tmp);
@@ -157,7 +174,7 @@ contract TestGasSavingPool is Test {
     }
 
 
-    function test_SellQuote() public {
+    function test_sellQuote() public {
         uint256 loop = 2;
         // buy shares
         vm.startPrank(DAI_WHALE);
@@ -193,6 +210,8 @@ contract TestGasSavingPool is Test {
             receiveBaseAmount1 = gsp.sellQuote(USER);
             usdc.transfer(address(dsp), QUOTE_INPUT);
             receiveBaseAmount2 = dsp.sellQuote(USER);
+            gsp.getPMMState();
+            dsp.getPMMState();
             assertEq(receiveBaseAmount1, receiveBaseAmount2, "gsp receiveBaseAmount != dsp receiveBaseAmount");
             uint256 tmp = i == 0 ? 1999730072785929125 : 1998897790924520164 ;
             assertEq(receiveBaseAmount1, tmp);
@@ -218,7 +237,7 @@ contract TestGasSavingPool is Test {
     }
 
 
-    function test_CompareTwoPools() public {
+    function test_compareTwoPools() public {
         // check PMMState
         gsp.getPMMState();
         dsp.getPMMState();
@@ -274,13 +293,13 @@ contract TestGasSavingPool is Test {
     } 
 
 
-    function test_Flashloan() public {
+    function test_flashloan() public {
         // buy shares
         vm.startPrank(DAI_WHALE);
         dai.transfer(USER, 2 * (BASE_RESERVE + BASE_INPUT));
         vm.stopPrank();
         vm.startPrank(USDC_WHALE);
-        usdc.transfer(USER, 2 * QUOTE_RESERVE);
+        usdc.transfer(USER, 2 * (QUOTE_RESERVE + QUOTE_INPUT));
         vm.stopPrank();
 
         vm.startPrank(USER);
@@ -294,12 +313,11 @@ contract TestGasSavingPool is Test {
         assertEq(baseInput1, baseInput2, "gsp baseInput != dsp baseInput");
         assertEq(quoteInput1, quoteInput2, "gsp quoteInput != dsp quoteInput");
 
-        // flashloan
+        // flashloan - sellbase
         (uint256 amountQuote1, , ,) = gsp.querySellBase(USER, BASE_INPUT);
         (uint256 amountQuote2, , ,) = dsp.querySellBase(USER, BASE_INPUT);
         assertEq(amountQuote1, amountQuote2, "amountQuote1 != amountQuote2");
         assertEq(amountQuote1, 999935);
-
         uint256 quoteBalanceBefore = usdc.balanceOf(USER);
         dai.transfer(address(gsp), BASE_INPUT);
         dai.transfer(address(dsp), BASE_INPUT);
@@ -307,6 +325,20 @@ contract TestGasSavingPool is Test {
         dsp.flashLoan(0, amountQuote2, USER, "");
         uint256 quoteBalanceAfter = usdc.balanceOf(USER);
         assertEq(quoteBalanceBefore + amountQuote1 + amountQuote2, quoteBalanceAfter, "Flashloan failed");
+
+        // flashloan - sellquote
+        (uint256 amountBase1, , ,) = gsp.querySellQuote(USER, QUOTE_INPUT);
+        (uint256 amountBase2, , ,) = dsp.querySellQuote(USER, QUOTE_INPUT);
+        assertEq(amountBase1, amountBase2, "amountBase1 != amountBase2");
+        assertEq(amountBase1, 1999980444387880420);
+        uint256 baseBalanceBefore = dai.balanceOf(USER);
+        usdc.transfer(address(gsp), QUOTE_INPUT);
+        usdc.transfer(address(dsp), QUOTE_INPUT);
+        gsp.flashLoan(amountBase1, 0, USER, "");
+        dsp.flashLoan(amountBase2, 0, USER, "");
+        uint256 baseBalanceAfter = dai.balanceOf(USER);
+        assertEq(baseBalanceBefore + amountBase1 + amountBase2, baseBalanceAfter, "Flashloan failed");
+
         vm.stopPrank();
     }
 }

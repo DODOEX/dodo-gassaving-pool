@@ -83,9 +83,10 @@ contract GSPFunding is GSPVault {
 
         baseAmount = baseBalance * shareAmount / totalShares;
         quoteAmount = quoteBalance * shareAmount / totalShares;
+        
 
-        _BASE_TARGET_ = uint112(DecimalMath._divCeil(((uint256(_BASE_TARGET_) - uint256(_BASE_TARGET_)) * shareAmount), totalShares));
-        _QUOTE_TARGET_ = uint112(DecimalMath._divCeil(((uint256(_QUOTE_TARGET_) - uint256(_QUOTE_TARGET_)) * shareAmount), totalShares));
+        _BASE_TARGET_ = uint112(uint256(_BASE_TARGET_) - DecimalMath._divCeil((uint256(_BASE_TARGET_) * (shareAmount)), totalShares));
+        _QUOTE_TARGET_ = uint112(uint256(_QUOTE_TARGET_) - DecimalMath._divCeil((uint256(_QUOTE_TARGET_) * (shareAmount)), totalShares));
         
         require(
             baseAmount >= baseMinAmount && quoteAmount >= quoteMinAmount,

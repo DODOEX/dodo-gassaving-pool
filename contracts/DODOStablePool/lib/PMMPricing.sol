@@ -8,7 +8,8 @@
 pragma solidity 0.8.16;
 pragma experimental ABIEncoderV2;
 
-import {DecimalMath} from "../lib/DecimalMath.sol";
+import {SafeMath} from "../../lib/SafeMath.sol";
+import {DecimalMath} from "../../lib/DecimalMath.sol";
 import {DODOMath} from "../lib/DODOMath.sol";
 
 /**
@@ -19,6 +20,7 @@ import {DODOMath} from "../lib/DODOMath.sol";
  */
 
 library PMMPricing {
+    using SafeMath for uint256;
 
     enum RState {ONE, ABOVE_ONE, BELOW_ONE}
 
@@ -45,8 +47,8 @@ library PMMPricing {
             receiveQuoteAmount = _ROneSellBaseToken(state, payBaseAmount);
             newR = RState.BELOW_ONE;
         } else if (state.R == RState.ABOVE_ONE) {
-            uint256 backToOnePayBase = state.B0 - state.B;
-            uint256 backToOneReceiveQuote = state.Q - state.Q0;
+            uint256 backToOnePayBase = state.B0.sub(state.B);
+            uint256 backToOneReceiveQuote = state.Q.sub(state.Q0);
             // case 2: R>1
             // complex case, R status depends on trading amount
             if (payBaseAmount < backToOnePayBase) {
@@ -64,8 +66,8 @@ library PMMPricing {
                 newR = RState.ONE;
             } else {
                 // case 2.3: R status changes to BELOW_ONE
-                receiveQuoteAmount = backToOneReceiveQuote + (
-                    _ROneSellBaseToken(state, (payBaseAmount - backToOnePayBase))
+                receiveQuoteAmount = backToOneReceiveQuote.add(
+                    _ROneSellBaseToken(state, payBaseAmount.sub(backToOnePayBase))
                 );
                 newR = RState.BELOW_ONE;
             }
@@ -89,8 +91,8 @@ library PMMPricing {
             receiveBaseAmount = _RAboveSellQuoteToken(state, payQuoteAmount);
             newR = RState.ABOVE_ONE;
         } else {
-            uint256 backToOnePayQuote = state.Q0 - state.Q;
-            uint256 backToOneReceiveBase = state.B - state.B0;
+            uint256 backToOnePayQuote = state.Q0.sub(state.Q);
+            uint256 backToOneReceiveBase = state.B.sub(state.B0);
             if (payQuoteAmount < backToOnePayQuote) {
                 receiveBaseAmount = _RBelowSellQuoteToken(state, payQuoteAmount);
                 newR = RState.BELOW_ONE;
@@ -101,8 +103,8 @@ library PMMPricing {
                 receiveBaseAmount = backToOneReceiveBase;
                 newR = RState.ONE;
             } else {
-                receiveBaseAmount = backToOneReceiveBase + (
-                    _ROneSellQuoteToken(state, payQuoteAmount - backToOnePayQuote)
+                receiveBaseAmount = backToOneReceiveBase.add(
+                    _ROneSellQuoteToken(state, payQuoteAmount.sub(backToOnePayQuote))
                 );
                 newR = RState.ABOVE_ONE;
             }
@@ -159,7 +161,7 @@ library PMMPricing {
         return
             DODOMath._GeneralIntegrate(
                 state.Q0,
-                state.Q + payQuoteAmount,
+                state.Q.add(payQuoteAmount),
                 state.Q,
                 DecimalMath.reciprocalFloor(state.i),
                 state.K
@@ -195,7 +197,7 @@ library PMMPricing {
         return
             DODOMath._GeneralIntegrate(
                 state.B0,
-                state.B + payBaseAmount,
+                state.B.add(payBaseAmount),
                 state.B,
                 state.i,
                 state.K
@@ -225,14 +227,14 @@ library PMMPricing {
         if (state.R == RState.BELOW_ONE) {
             state.Q0 = DODOMath._SolveQuadraticFunctionForTarget(
                 state.Q,
-                state.B - state.B0,
+                state.B.sub(state.B0),
                 state.i,
                 state.K
             );
         } else if (state.R == RState.ABOVE_ONE) {
             state.B0 = DODOMath._SolveQuadraticFunctionForTarget(
                 state.B,
-                state.Q - state.Q0,
+                state.Q.sub(state.Q0),
                 DecimalMath.reciprocalFloor(state.i),
                 state.K
             );
@@ -241,12 +243,12 @@ library PMMPricing {
 
     function getMidPrice(PMMState memory state) internal pure returns (uint256) {
         if (state.R == RState.BELOW_ONE) {
-            uint256 R = DecimalMath.divFloor(state.Q0 * state.Q0 / state.Q, state.Q);
-            R = DecimalMath.ONE - state.K + (DecimalMath.mulFloor(state.K, R));
+            uint256 R = DecimalMath.divFloor(state.Q0.mul(state.Q0).div(state.Q), state.Q);
+            R = DecimalMath.ONE.sub(state.K).add(DecimalMath.mulFloor(state.K, R));
             return DecimalMath.divFloor(state.i, R);
         } else {
-            uint256 R = DecimalMath.divFloor(state.B0 * state.B0 / state.B, state.B);
-            R = DecimalMath.ONE - state.K + (DecimalMath.mulFloor(state.K, R));
+            uint256 R = DecimalMath.divFloor(state.B0.mul(state.B0).div(state.B), state.B);
+            R = DecimalMath.ONE.sub(state.K).add(DecimalMath.mulFloor(state.K, R));
             return DecimalMath.mulFloor(state.i, R);
         }
     }

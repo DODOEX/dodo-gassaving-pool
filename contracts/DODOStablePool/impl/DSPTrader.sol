@@ -11,7 +11,7 @@ pragma experimental ABIEncoderV2;
 import {DSPVault} from "./DSPVault.sol";
 import {SafeMath} from "../../lib/SafeMath.sol";
 import {DecimalMath} from "../../lib/DecimalMath.sol";
-import {PMMPricing} from "../../lib/PMMPricing.sol";
+import {PMMPricing} from "../lib/PMMPricing.sol";
 import {IDODOCallee} from "../../intf/IDODOCallee.sol";
 
 contract DSPTrader is DSPVault {

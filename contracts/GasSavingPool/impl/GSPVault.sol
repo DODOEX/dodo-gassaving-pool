@@ -41,7 +41,11 @@ contract GSPVault is GSPStorage {
         quoteReserve = _QUOTE_RESERVE_;
     }
 
-    function getFeeRate() external view returns (uint256 lpFeeRate, uint256 mtFeeRate) {
+    function getUserFeeRate(address user) 
+        external 
+        view 
+        returns (uint256 lpFeeRate, uint256 mtFeeRate) 
+    {
         lpFeeRate = _LP_FEE_RATE_;
         mtFeeRate = _MT_FEE_RATE_;
     }
@@ -108,13 +112,20 @@ contract GSPVault is GSPStorage {
         }
     }
 
-    function setNewPrice(uint256 i) external onlyMaintainer {
+    function adjustPriceLimit(uint256 priceLimit) external onlyMaintainer {
+        // the default priceLimit is 1e3
+        require(priceLimit <= 1e6, "INVALID_PRICE_LIMIT");
+        _PRICE_LIMIT_ = priceLimit;
+    }
+
+    function adjustPrice(uint256 i) external onlyMaintainer {
         // the difference between i and _I_ should be less than priceLimit
-        require(((_I_ - i) * 1e6 / _I_) <= _PRICE_LIMIT_, "EXCEED_PRICE_LIMIT");
+        uint256 offset = i > _I_ ? i - _I_ : _I_ - i;
+        require((offset * 1e6 / _I_) <= _PRICE_LIMIT_, "EXCEED_PRICE_LIMIT");
         _I_ = i;
     }
 
-    function setMtFeeRate(uint256 mtFeeRate) external onlyMaintainer {
+    function adjustMtFeeRate(uint256 mtFeeRate) external onlyMaintainer {
         require(mtFeeRate <= 10**18, "INVALID_MT_FEE_RATE");
         _MT_FEE_RATE_ = mtFeeRate;
     }
