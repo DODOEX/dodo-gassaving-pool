@@ -11,7 +11,7 @@ contract PMMPricingTestHelper {
     
     function sellBaseToken(PMMPricing.PMMState memory state, uint256 payBaseAmount)
         external
-        pure
+        view
         returns (uint256, PMMPricing.RState)
     {
         (uint256 receiveQuoteAmount, PMMPricing.RState newR) = PMMPricing.sellBaseToken(state, payBaseAmount);
@@ -20,7 +20,7 @@ contract PMMPricingTestHelper {
 
     function sellQuoteToken(PMMPricing.PMMState memory state, uint256 payQuoteAmount)
         external
-        pure
+        view
         returns (uint256, PMMPricing.RState)
     {
         (uint256 receiveBaseAmount, PMMPricing.RState newR) = PMMPricing.sellQuoteToken(state, payQuoteAmount);
@@ -82,6 +82,19 @@ contract PMMPricingTest is Test {
         assertTrue(newR == PMMPricing.RState.BELOW_ONE);
     }
 
+    function testSellBaseTokenCornerCase() public {
+        state.i = 1e18;
+        state.K = 1e18;
+        state.B = 5e18;
+        state.Q = 5e18;
+        state.B0 = 10e18;
+        state.Q0 = 2e18;
+        state.R = PMMPricing.RState.ABOVE_ONE;
+        (uint256 receiveQuoteAmount, PMMPricing.RState newR) = helper.sellBaseToken(state, 1e18);
+        assertTrue(newR == PMMPricing.RState.ABOVE_ONE);
+        assertTrue(receiveQuoteAmount == state.Q - state.Q0);
+    }
+
     function testSellQuoteToken() public {
         // case 1: R=1
         // R falls above one
@@ -116,6 +129,19 @@ contract PMMPricingTest is Test {
         // case 2.3: R status changes to ABOVE_ONE
         (receiveQuoteAmount, newR) = helper.sellQuoteToken(state, 5e18);
         assertTrue(newR == PMMPricing.RState.ABOVE_ONE);
+    }
+
+    function testSellQuoteTokenCornerCase() public {
+        state.i = 1e18;
+        state.K = 1e18;
+        state.B = 5e18;
+        state.Q = 5e18;
+        state.B0 = 2e18;
+        state.Q0 = 10e18;
+        state.R = PMMPricing.RState.BELOW_ONE;
+        (uint256 receiveBaseAmount, PMMPricing.RState newR) = helper.sellQuoteToken(state, 1e18);
+        assertTrue(newR == PMMPricing.RState.BELOW_ONE);
+        assertTrue(receiveBaseAmount == state.B - state.B0);
     }
 
     function testGetMidPrice() public {

@@ -7,9 +7,12 @@ import {Test, console} from "forge-std/Test.sol";
 import {DeployGSP} from "../scripts/DeployGSP.s.sol";
 import {GSP} from "../contracts/GasSavingPool/impl/GSP.sol";
 import {IERC20} from "../contracts/intf/IERC20.sol";
+import {MockERC20} from "mock/MockERC20.sol";
 
 contract TestGSPVault is Test {
     GSP gsp;
+    MockERC20 mockBaseToken;
+    MockERC20 mockQuoteToken;
 
     address USER = vm.addr(1);
     address OTHER = vm.addr(2);
@@ -36,6 +39,12 @@ contract TestGSPVault is Test {
         // Deploy and Init 
         DeployGSP deployGSP = new DeployGSP();
         gsp = deployGSP.run();
+
+        // Deploy ERC20 Mock
+        mockBaseToken = new MockERC20("mockBaseToken", "mockBaseToken", 18);
+        mockBaseToken.mint(USER, type(uint256).max);
+        mockQuoteToken = new MockERC20("mockQuoteToken", "mockQuoteToken", 18);
+        mockQuoteToken.mint(USER, type(uint256).max);
     }
 
     function test_getVaultReserve() public {
@@ -71,16 +80,44 @@ contract TestGSPVault is Test {
         assertTrue(mtFeeRateAfter == 2e13);
     }
 
-    function test_sync() public {
-        // sync
-        (uint256 baseReserve, uint256 quoteReserve) = gsp.getVaultReserve();
+    function test_syncSucceed() public {
+        GSP gspTest = new GSP();
+        gspTest.init(
+            MAINTAINER,
+            address(mockBaseToken),
+            address(mockQuoteToken),
+            0,
+            0,
+            1000000,
+            500000000000000,
+            true
+        );
+        (uint256 baseReserve, uint256 quoteReserve) = gspTest.getVaultReserve();
         assertTrue(baseReserve == 0);
         assertTrue(quoteReserve == 0);
-        vm.prank(DAI_WHALE);
-        dai.transfer(address(gsp), 1e18);
-        gsp.sync();
-        (baseReserve, quoteReserve) = gsp.getVaultReserve();
+        mockBaseToken.transfer(address(gspTest), 1e18);
+        gspTest.sync();
+        (baseReserve, quoteReserve) = gspTest.getVaultReserve();
         assertTrue(baseReserve == 1e18);
+    }
+
+    function test_syncOverflow() public {
+        GSP gspTest = new GSP();
+        gspTest.init(
+            MAINTAINER,
+            address(mockBaseToken),
+            address(mockQuoteToken),
+            0,
+            0,
+            1000000,
+            500000000000000,
+            true
+        );
+        vm.startPrank(USER);
+        mockBaseToken.transfer(address(gspTest), type(uint256).max);
+        mockQuoteToken.transfer(address(gspTest), type(uint256).max);
+        vm.expectRevert("OVERFLOW");
+        gspTest.sync();
     }
 
     function test_withdrawMtFeeTotal() public {
@@ -153,21 +190,10 @@ contract TestGSPVault is Test {
         assertTrue(gsp._QUOTE_TARGET_() == gsp._QUOTE_RESERVE_());
     }
 
-    function test_permitWithInvalidSignature() public {
-        // // buy shares
-        // vm.startPrank(DAI_WHALE);
-        // dai.transfer(USER, (BASE_RESERVE + BASE_INPUT));
-        // vm.stopPrank();
-        // vm.startPrank(USDC_WHALE);
-        // usdc.transfer(USER, QUOTE_RESERVE);
-        // vm.stopPrank();
-        // vm.startPrank(USER);
-        // dai.transfer(address(gsp), BASE_RESERVE);
-        // usdc.transfer(address(gsp), QUOTE_RESERVE);
-        // gsp.buyShares(USER);
+    function test_permitSucceed() public {
+        uint256 userPrivateKey = 1;
         vm.startPrank(USER);
         uint256 value = gsp.balanceOf(USER);
-        uint256 privKey = 1;
         uint256 deadline = block.timestamp + 100000;
         bytes32 digest =
             keccak256(
@@ -180,13 +206,39 @@ contract TestGSPVault is Test {
                             USER,
                             OTHER,
                             value,
-                            gsp.nonces(USER) + 1,
+                            gsp.nonces(USER),
                             deadline
                         )
                     )
                 )
             );
-        (uint8 v, bytes32 r, bytes32 s) = vm.sign(privKey, digest);
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(userPrivateKey, digest);
+        gsp.permit(USER, OTHER, value, deadline, v, r, s);
+    }
+
+    function test_permitWithInvalidSignature() public {
+        uint256 otherPrivateKey = 2;
+        vm.startPrank(OTHER);
+        uint256 value = gsp.balanceOf(USER);
+        uint256 deadline = block.timestamp + 100000;
+        bytes32 digest =
+            keccak256(
+                abi.encodePacked(
+                    "\x19\x01",
+                    gsp.DOMAIN_SEPARATOR(),
+                    keccak256(
+                        abi.encode(
+                            gsp.PERMIT_TYPEHASH(),
+                            USER,
+                            OTHER,
+                            value,
+                            gsp.nonces(USER),
+                            deadline
+                        )
+                    )
+                )
+            );
+        (uint8 v, bytes32 r, bytes32 s) = vm.sign(otherPrivateKey, digest);
         vm.expectRevert("DODO_DSP_LP: INVALID_SIGNATURE");
         gsp.permit(USER, OTHER, value, deadline, v, r, s);
     }
@@ -206,7 +258,7 @@ contract TestGSPVault is Test {
                             USER,
                             OTHER,
                             value,
-                            gsp.nonces(USER) + 1,
+                            gsp.nonces(USER),
                             deadline
                         )
                     )
@@ -280,4 +332,25 @@ contract TestGSPVault is Test {
         gsp.buyShares(USER);
     }
 
+    function test_setReserveWithOverflow() public {
+        GSP gspTest = new GSP();
+        gspTest.init(
+            MAINTAINER,
+            address(mockBaseToken),
+            address(mockQuoteToken),
+            0,
+            0,
+            1000000,
+            500000000000000,
+            false
+        );
+        vm.startPrank(USER);
+        mockBaseToken.transfer(address(gspTest), 1e19);
+        mockQuoteToken.transfer(address(gspTest), 1e19);
+        gspTest.buyShares(USER);
+        mockBaseToken.transfer(address(gspTest), type(uint112).max);
+        vm.expectRevert("OVERFLOW");
+        gspTest.sellBase(USER);
+        vm.stopPrank();
+    }
 }

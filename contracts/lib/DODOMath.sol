@@ -74,6 +74,7 @@ library DODOMath {
         }
         uint256 sqrt;
         uint256 ki = 4 * k * i;
+
         if (ki == 0) {
             sqrt = DecimalMath.ONE;
         } else if ((ki * delta) / ki == delta) {

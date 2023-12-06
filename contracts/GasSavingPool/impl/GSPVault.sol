@@ -13,6 +13,7 @@ import {DecimalMath} from "../../lib/DecimalMath.sol";
 import {PMMPricing} from "../../lib/PMMPricing.sol";
 import {SafeERC20} from "../../lib/SafeERC20.sol";
 import {GSPStorage} from "./GSPStorage.sol";
+import "../../../lib/forge-std/src/console.sol";
 
 contract GSPVault is GSPStorage {
     using SafeERC20 for IERC20;
@@ -272,6 +273,7 @@ contract GSPVault is GSPStorage {
                     )
                 )
             );
+
         address recoveredAddress = ecrecover(digest, v, r, s);
         require(
             recoveredAddress != address(0) && recoveredAddress == owner,
