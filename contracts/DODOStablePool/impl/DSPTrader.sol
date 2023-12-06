@@ -34,7 +34,7 @@ contract DSPTrader is DSPVault {
 
     // ============ Trade Functions ============
 
-    function sellBase(address to) external preventReentrant returns (uint256 receiveQuoteAmount) {
+    function sellBase(address to) external nonReentrant returns (uint256 receiveQuoteAmount) {
         uint256 baseBalance = _BASE_TOKEN_.balanceOf(address(this));
         uint256 baseInput = baseBalance.sub(uint256(_BASE_RESERVE_));
         uint256 mtFee;
@@ -65,7 +65,7 @@ contract DSPTrader is DSPVault {
         );
     }
 
-    function sellQuote(address to) external preventReentrant returns (uint256 receiveBaseAmount) {
+    function sellQuote(address to) external nonReentrant returns (uint256 receiveBaseAmount) {
         uint256 quoteBalance = _QUOTE_TOKEN_.balanceOf(address(this));
         uint256 quoteInput = quoteBalance.sub(uint256(_QUOTE_RESERVE_));
         uint256 mtFee;
@@ -104,7 +104,7 @@ contract DSPTrader is DSPVault {
         uint256 quoteAmount,
         address assetTo,
         bytes calldata data
-    ) external preventReentrant {
+    ) external nonReentrant {
         _transferBaseOut(assetTo, baseAmount);
         _transferQuoteOut(assetTo, quoteAmount);
 

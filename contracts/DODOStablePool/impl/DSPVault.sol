@@ -90,7 +90,7 @@ contract DSPVault is DSPStorage {
         if (_IS_OPEN_TWAP_) _twapUpdate();
     }
 
-    function sync() external preventReentrant {
+    function sync() external nonReentrant {
         _sync();
     }
 

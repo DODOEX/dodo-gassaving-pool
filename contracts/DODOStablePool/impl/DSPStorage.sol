@@ -8,7 +8,7 @@
 pragma solidity 0.8.16;
 pragma experimental ABIEncoderV2;
 
-import {ReentrancyGuard} from "../../lib/ReentrancyGuard.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {SafeMath} from "../lib/SafeMath.sol";
 import {DODOMath} from "../lib/DODOMath.sol";
 import {DecimalMath} from "../../lib/DecimalMath.sol";

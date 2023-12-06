@@ -26,7 +26,7 @@ contract DSPFunding is DSPVault {
     // buy shares [round down]
     function buyShares(address to)
         external
-        preventReentrant
+        nonReentrant
         returns (
             uint256 shares,
             uint256 baseInput,
@@ -74,7 +74,7 @@ contract DSPFunding is DSPVault {
         uint256 quoteMinAmount,
         bytes calldata data,
         uint256 deadline
-    ) external preventReentrant returns (uint256 baseAmount, uint256 quoteAmount) {
+    ) external nonReentrant returns (uint256 baseAmount, uint256 quoteAmount) {
         require(deadline >= block.timestamp, "TIME_EXPIRED");
         require(shareAmount <= _SHARES_[msg.sender], "DLP_NOT_ENOUGH");
 

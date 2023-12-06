@@ -11,7 +11,7 @@ contract PMMPricingTestHelper {
     
     function sellBaseToken(PMMPricing.PMMState memory state, uint256 payBaseAmount)
         external
-        view
+        pure
         returns (uint256, PMMPricing.RState)
     {
         (uint256 receiveQuoteAmount, PMMPricing.RState newR) = PMMPricing.sellBaseToken(state, payBaseAmount);
@@ -20,7 +20,7 @@ contract PMMPricingTestHelper {
 
     function sellQuoteToken(PMMPricing.PMMState memory state, uint256 payQuoteAmount)
         external
-        view
+        pure
         returns (uint256, PMMPricing.RState)
     {
         (uint256 receiveBaseAmount, PMMPricing.RState newR) = PMMPricing.sellQuoteToken(state, payQuoteAmount);

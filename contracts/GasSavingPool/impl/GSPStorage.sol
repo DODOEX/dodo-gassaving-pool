@@ -6,7 +6,6 @@
 */
 
 pragma solidity 0.8.16;
-pragma experimental ABIEncoderV2;
 
 import {DODOMath} from "../../lib/DODOMath.sol";
 import {DecimalMath} from "../../lib/DecimalMath.sol";

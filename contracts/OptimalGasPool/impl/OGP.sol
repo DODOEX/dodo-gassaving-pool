@@ -5,7 +5,7 @@ pragma experimental ABIEncoderV2;
 import {IERC20} from "../../DODOStablePool/intf/IERC20.sol";
 import {SafeMath} from "../../DODOStablePool/lib/SafeMath.sol";
 import {SafeERC20} from "../../DODOStablePool/lib/SafeERC20.sol";
-import {ReentrancyGuard} from "../../lib/ReentrancyGuard.sol";
+import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 
 contract OGP is ReentrancyGuard{
     using SafeMath for uint256;
@@ -26,7 +26,7 @@ contract OGP is ReentrancyGuard{
         _QUOTE_RESERVE_ = _QUOTE_TOKEN_.balanceOf(address(this)); 
     }
 
-    function sellBase(address to) external preventReentrant returns (uint256 receiveQuoteAmount) {
+    function sellBase(address to) external nonReentrant returns (uint256 receiveQuoteAmount) {
         uint256 baseBalance = _BASE_TOKEN_.balanceOf(address(this));
 
         receiveQuoteAmount = _K_.sub(baseBalance.div(1e18)).mul(1e6);
@@ -35,7 +35,7 @@ contract OGP is ReentrancyGuard{
         _QUOTE_RESERVE_ = _QUOTE_TOKEN_.balanceOf(address(this));
     }
 
-    function sellQuote(address to) external preventReentrant returns (uint256 receiveBaseAmount) {
+    function sellQuote(address to) external nonReentrant returns (uint256 receiveBaseAmount) {
         uint256 quoteBalance = _QUOTE_TOKEN_.balanceOf(address(this));
 
         receiveBaseAmount = _K_.sub(quoteBalance.div(1e6)).mul(1e18);
