@@ -95,6 +95,7 @@ contract TestGSPVault is Test {
         (uint256 baseReserve, uint256 quoteReserve) = gspTest.getVaultReserve();
         assertTrue(baseReserve == 0);
         assertTrue(quoteReserve == 0);
+        vm.startPrank(USER);
         mockBaseToken.transfer(address(gspTest), 1e18);
         gspTest.sync();
         (baseReserve, quoteReserve) = gspTest.getVaultReserve();
