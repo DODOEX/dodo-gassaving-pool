@@ -7,7 +7,7 @@ import "../lib/forge-std/src/console.sol";
 
 
 import {DSP} from "../contracts/DODOStablePool/impl/DSP.sol";
-import {FeeRateModel} from "../contracts/lib/FeeRateModel.sol";
+import {FeeRateModel} from "../contracts/DODOStablePool/lib/FeeRateModel.sol";
 import {FeeRateDIP3Impl} from "../contracts/DODOFee/FeeRateDIP3Impl.sol";
 
 contract DeployDSP is Script {

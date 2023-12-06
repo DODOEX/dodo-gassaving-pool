@@ -6,7 +6,7 @@ pragma abicoder v2;
 import {Test, console} from "forge-std/Test.sol";
 import {DeployGSP} from "../scripts/DeployGSP.s.sol";
 import {GSP} from "../contracts/GasSavingPool/impl/GSP.sol";
-import {IERC20} from "../contracts/intf/IERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {MockERC20} from "mock/MockERC20.sol";
 
 contract TestGSPTrader is Test {

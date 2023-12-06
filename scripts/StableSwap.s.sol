@@ -11,7 +11,7 @@ import {OGP} from "../contracts/OptimalGasPool/impl/OGP.sol";
 import {GSP} from "../contracts/GasSavingPool/impl/GSP.sol";
 import {IDSP} from "../contracts/DODOStablePool/intf/IDSP.sol";
 import {ISwapRouter} from "../contracts/UniV3/intf/ISwapRouter.sol";
-import {IERC20} from "../contracts/intf/IERC20.sol";
+import {IERC20} from "../contracts/DODOStablePool/intf/IERC20.sol";
 
 
 contract StableSwap is Script {

@@ -2,9 +2,9 @@
 pragma solidity 0.8.16;
 pragma experimental ABIEncoderV2;
 
-import {IERC20} from "../../intf/IERC20.sol";
-import {SafeMath} from "../../lib/SafeMath.sol";
-import {SafeERC20} from "../../lib/SafeERC20.sol";
+import {IERC20} from "../../DODOStablePool/intf/IERC20.sol";
+import {SafeMath} from "../../DODOStablePool/lib/SafeMath.sol";
+import {SafeERC20} from "../../DODOStablePool/lib/SafeERC20.sol";
 import {ReentrancyGuard} from "../../lib/ReentrancyGuard.sol";
 
 contract OGP is ReentrancyGuard{

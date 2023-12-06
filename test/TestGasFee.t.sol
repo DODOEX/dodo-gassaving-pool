@@ -3,10 +3,8 @@
 pragma solidity 0.8.16;
 
 import {Test, console} from "forge-std/Test.sol";
-
 import {StableSwap} from "../scripts/StableSwap.s.sol";
-
-import {IERC20} from "../contracts/intf/IERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 contract TestGasFee is Test {
     StableSwap stableSwap;

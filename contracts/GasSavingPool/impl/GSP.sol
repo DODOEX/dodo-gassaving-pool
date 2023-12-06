@@ -8,7 +8,8 @@
 pragma solidity 0.8.16;
 pragma experimental ABIEncoderV2;
 
-import {IERC20} from "../../intf/IERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
 import {GSPTrader} from "./GSPTrader.sol";
 import {GSPFunding} from "./GSPFunding.sol";
 import {GSPVault} from "./GSPVault.sol";
@@ -51,11 +52,11 @@ contract GSP is GSPTrader, GSPFunding {
         if (isOpenTWAP) _BLOCK_TIMESTAMP_LAST_ = uint32(block.timestamp % 2**32);
 
         string memory connect = "_";
-        string memory suffix = "DLP";
+        string memory suffix = "GSP";
 
         name = string(abi.encodePacked(suffix, connect, addressToShortString(address(this))));
-        symbol = "DLP";
-        decimals = _BASE_TOKEN_.decimals();
+        symbol = "GSP";
+        decimals = IERC20Metadata(baseTokenAddress).decimals();
 
         // ============================== Permit ====================================
         uint256 chainId;

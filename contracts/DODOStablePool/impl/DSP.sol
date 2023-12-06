@@ -8,8 +8,8 @@
 pragma solidity 0.8.16;
 pragma experimental ABIEncoderV2;
 
-import {IFeeRateModel} from "../../lib/FeeRateModel.sol";
-import {IERC20} from "../../intf/IERC20.sol";
+import {IFeeRateModel} from "../lib/FeeRateModel.sol";
+import {IERC20} from "../intf/IERC20.sol";
 import {DSPTrader} from "./DSPTrader.sol";
 import {DSPFunding} from "./DSPFunding.sol";
 import {DSPVault} from "./DSPVault.sol";

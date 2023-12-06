@@ -6,7 +6,7 @@ pragma abicoder v2;
 import {Test, console} from "forge-std/Test.sol";
 import {DeployGSP} from "../scripts/DeployGSP.s.sol";
 import {GSP} from "../contracts/GasSavingPool/impl/GSP.sol";
-import {IERC20} from "../contracts/intf/IERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {MockERC20} from "mock/MockERC20.sol";
 
 contract TestGSPVault is Test {
@@ -164,6 +164,7 @@ contract TestGSPVault is Test {
         gsp.buyShares(USER);
         // sellbase
         gsp.sellBase(USER);
+        gsp.getPMMState();
         vm.stopPrank();
         // set B < B0
         vm.startPrank(address(gsp));
@@ -173,11 +174,13 @@ contract TestGSPVault is Test {
         dai.transferFrom(address(gsp), USER, BASE_INPUT);
         gsp.sync();
         gsp.correctRState();
+        gsp.getPMMState();
         assertTrue(gsp._BASE_TARGET_() == gsp._BASE_RESERVE_());
         assertTrue(gsp._QUOTE_TARGET_() == gsp._QUOTE_RESERVE_());
         // sellquote
         vm.startPrank(USER);
         gsp.sellQuote(USER);
+        gsp.getPMMState();
         vm.stopPrank();
         // set Q < Q0
         vm.startPrank(address(gsp));
@@ -187,6 +190,7 @@ contract TestGSPVault is Test {
         usdc.transferFrom(address(gsp), USER, QUOTE_INPUT);
         gsp.sync();
         gsp.correctRState();
+        gsp.getPMMState();
         assertTrue(gsp._BASE_TARGET_() == gsp._BASE_RESERVE_());
         assertTrue(gsp._QUOTE_TARGET_() == gsp._QUOTE_RESERVE_());
     }

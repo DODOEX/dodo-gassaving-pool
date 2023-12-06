@@ -9,12 +9,10 @@ import {DeployDSP} from "../scripts/DeployDSP.s.sol";
 import {GSP} from "../contracts/GasSavingPool/impl/GSP.sol";
 import {DSP} from "../contracts/DODOStablePool/impl/DSP.sol";
 import {PMMPricing} from "../contracts/lib/PMMPricing.sol";
-import {SafeMath} from "../contracts/lib/SafeMath.sol";
-import {IERC20} from "../contracts/intf/IERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 
 
 contract TestGasSavingPool is Test {
-    using SafeMath for uint256;
     // DAI - USDC
     GSP gsp; 
     DSP dsp;
@@ -166,7 +164,7 @@ contract TestGasSavingPool is Test {
             // check mtFee
             mtFee1 = gsp._MT_FEE_QUOTE_();
             uint256 mtFeeAfter = usdc.balanceOf(MAINTAINER);
-            mtFee2 = mtFeeAfter.sub(mtFeeBefore);
+            mtFee2 = mtFeeAfter - mtFeeBefore;
             assertEq(mtFee1, mtFee2, "gsp mtFee != dsp mtFee");
             tmp = i == 0 ? 9 : 18;
             assertEq(tmp, mtFee1);
@@ -229,7 +227,7 @@ contract TestGasSavingPool is Test {
             // check mtFee
             mtFee1 = gsp._MT_FEE_BASE_();
             uint256 mtFeeAfter = dai.balanceOf(MAINTAINER);
-            mtFee2 = mtFeeAfter.sub(mtFeeBefore);
+            mtFee2 = mtFeeAfter - mtFeeBefore;
             assertEq(mtFee1, mtFee2, "gsp mtFee != dsp mtFee");
             tmp = i == 0 ? 19997500702866 : 39986678503889;
             assertEq(mtFee1, tmp);

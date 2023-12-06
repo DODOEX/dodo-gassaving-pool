@@ -11,7 +11,7 @@ pragma experimental ABIEncoderV2;
 import {DSPVault} from "./DSPVault.sol";
 import {DecimalMath} from "../../lib/DecimalMath.sol";
 import {IDODOCallee} from "../../intf/IDODOCallee.sol";
-import {SafeMath} from "../../lib/SafeMath.sol";
+import {SafeMath} from "../lib/SafeMath.sol";
 
 contract DSPFunding is DSPVault {
     using SafeMath for uint256;

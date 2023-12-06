@@ -8,7 +8,7 @@
 pragma solidity 0.8.16;
 pragma experimental ABIEncoderV2;
 
-import {SafeMath} from "../../lib/SafeMath.sol";
+import {SafeMath} from "../lib/SafeMath.sol";
 import {DecimalMath} from "../../lib/DecimalMath.sol";
 
 /**

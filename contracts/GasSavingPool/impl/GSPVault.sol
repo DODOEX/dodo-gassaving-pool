@@ -8,12 +8,11 @@
 pragma solidity 0.8.16;
 pragma experimental ABIEncoderV2;
 
-import {IERC20} from "../../intf/IERC20.sol";
 import {DecimalMath} from "../../lib/DecimalMath.sol";
 import {PMMPricing} from "../../lib/PMMPricing.sol";
-import {SafeERC20} from "../../lib/SafeERC20.sol";
+import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {GSPStorage} from "./GSPStorage.sol";
-import "../../../lib/forge-std/src/console.sol";
 
 contract GSPVault is GSPStorage {
     using SafeERC20 for IERC20;
@@ -96,7 +95,7 @@ contract GSPVault is GSPStorage {
         if (_IS_OPEN_TWAP_) _twapUpdate();
     }
 
-    function sync() external preventReentrant {
+    function sync() external nonReentrant {
         _sync();
     }
 
@@ -145,7 +144,7 @@ contract GSPVault is GSPStorage {
         }
     }
 
-    function withdrawMtFeeTotal() external preventReentrant onlyMaintainer {
+    function withdrawMtFeeTotal() external nonReentrant onlyMaintainer {
         uint256 mtFeeQuote = _MT_FEE_QUOTE_;
         uint256 mtFeeBase = _MT_FEE_BASE_;
         _MT_FEE_QUOTE_ = 0;

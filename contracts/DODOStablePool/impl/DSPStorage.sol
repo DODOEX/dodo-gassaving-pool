@@ -9,11 +9,11 @@ pragma solidity 0.8.16;
 pragma experimental ABIEncoderV2;
 
 import {ReentrancyGuard} from "../../lib/ReentrancyGuard.sol";
-import {SafeMath} from "../../lib/SafeMath.sol";
+import {SafeMath} from "../lib/SafeMath.sol";
 import {DODOMath} from "../lib/DODOMath.sol";
 import {DecimalMath} from "../../lib/DecimalMath.sol";
-import {IFeeRateModel} from "../../lib/FeeRateModel.sol";
-import {IERC20} from "../../intf/IERC20.sol";
+import {IFeeRateModel} from "../lib/FeeRateModel.sol";
+import {IERC20} from "../intf/IERC20.sol";
 import {PMMPricing} from "../lib/PMMPricing.sol";
 
 contract DSPStorage is ReentrancyGuard {

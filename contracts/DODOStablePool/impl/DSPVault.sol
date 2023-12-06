@@ -8,11 +8,11 @@
 pragma solidity 0.8.16;
 pragma experimental ABIEncoderV2;
 
-import {IERC20} from "../../intf/IERC20.sol";
-import {SafeMath} from "../../lib/SafeMath.sol";
+import {IERC20} from "../intf/IERC20.sol";
+import {SafeMath} from "../lib/SafeMath.sol";
 import {DecimalMath} from "../../lib/DecimalMath.sol";
 import {PMMPricing} from "../lib/PMMPricing.sol";
-import {SafeERC20} from "../../lib/SafeERC20.sol";
+import {SafeERC20} from "../lib/SafeERC20.sol";
 import {DSPStorage} from "./DSPStorage.sol";
 
 contract DSPVault is DSPStorage {

@@ -33,7 +33,7 @@ contract GSPTrader is GSPVault {
 
     // ============ Trade Functions ============
 
-    function sellBase(address to) external preventReentrant returns (uint256 receiveQuoteAmount) {
+    function sellBase(address to) external nonReentrant returns (uint256 receiveQuoteAmount) {
         uint256 baseBalance = _BASE_TOKEN_.balanceOf(address(this)) - _MT_FEE_BASE_;
         uint256 baseInput = baseBalance - uint256(_BASE_RESERVE_);
         uint256 mtFee;
@@ -65,7 +65,7 @@ contract GSPTrader is GSPVault {
         );
     }
 
-    function sellQuote(address to) external preventReentrant returns (uint256 receiveBaseAmount) {
+    function sellQuote(address to) external nonReentrant returns (uint256 receiveBaseAmount) {
         uint256 quoteBalance = _QUOTE_TOKEN_.balanceOf(address(this)) - _MT_FEE_QUOTE_;
         uint256 quoteInput = quoteBalance - uint256(_QUOTE_RESERVE_);
         uint256 mtFee;
@@ -104,7 +104,7 @@ contract GSPTrader is GSPVault {
         uint256 quoteAmount,
         address assetTo,
         bytes calldata data
-    ) external preventReentrant {
+    ) external nonReentrant {
         _transferBaseOut(assetTo, baseAmount);
         _transferQuoteOut(assetTo, quoteAmount);
 
