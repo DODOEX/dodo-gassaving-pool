@@ -1,6 +1,14 @@
-# Template
+# GasSavingPool
 
-Template using Foundry && HardHat architecture.
+Main Contract: ./contracts/GasSavingPool/impl/
+
+GSP is a advanced version of DODO V2 DSP. The whole contracts of GSP uses solidity 0.8.16 version. It provides user with two methods to swap, including sellBase and sellQuote. Same as DSP, GSP supports flashloan. Compared with  of DSP and UniV3, GSP can perform swap at a cost of much lower gas fee. 
+
+Inheritaged a template using Foundry && HardHat architecture. We use foundry test.
+
+## Diff Report from DSP
+
+link: https://www.diffchecker.com/voLLn79o/
 
 ## Motivation
 
@@ -131,7 +139,3 @@ remapping:
 
 import:
 `import "@openzeppelin/contracts/token/ERC20/ERC20.sol";`
-
-## Diff Report from DSP
-
-link: https://www.diffchecker.com/voLLn79o/
