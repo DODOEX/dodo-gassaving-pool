@@ -12,7 +12,7 @@ import {DecimalMath} from "../../lib/DecimalMath.sol";
 import {PMMPricing} from "../../lib/PMMPricing.sol";
 import {IDODOCallee} from "../../intf/IDODOCallee.sol";
 
-
+/// @notice this contract deal with swap
 contract GSPTrader is GSPVault {
 
     // ============ Events ============
@@ -31,16 +31,23 @@ contract GSPTrader is GSPVault {
     event RChange(PMMPricing.RState newRState);
 
     // ============ Trade Functions ============
-
+    /**
+     * @notice User sell base tokens, user pay tokens first. Must be used with a router
+     * @dev The base token balance is the actual balance minus the mt fee
+     * @param to The recipient of the output
+     * @return receiveQuoteAmount Amount of quote token received
+     */
     function sellBase(address to) external nonReentrant returns (uint256 receiveQuoteAmount) {
         uint256 baseBalance = _BASE_TOKEN_.balanceOf(address(this)) - _MT_FEE_BASE_;
         uint256 baseInput = baseBalance - uint256(_BASE_RESERVE_);
         uint256 mtFee;
         uint256 newBaseTarget;
         PMMPricing.RState newRState;
+        // calculate the amount of quote token to receive and mt fee
         (receiveQuoteAmount, mtFee, newRState, newBaseTarget) = querySellBase(tx.origin, baseInput);
-
+        // transfer quote token to recipient
         _transferQuoteOut(to, receiveQuoteAmount);
+        // update mt fee in quote token
         _MT_FEE_QUOTE_ = _MT_FEE_QUOTE_ + mtFee;
         
 
@@ -51,7 +58,7 @@ contract GSPTrader is GSPVault {
             _RState_ = uint32(newRState);
             emit RChange(newRState);
         }
-
+        // update reserve
         _setReserve(baseBalance, _QUOTE_TOKEN_.balanceOf(address(this)) - _MT_FEE_QUOTE_);
 
         emit DODOSwap(
@@ -64,18 +71,25 @@ contract GSPTrader is GSPVault {
         );
     }
 
+    /**
+     * @notice User sell quote tokens, user pay tokens first. Must be used with a router
+     * @param to The recipient of the output
+     * @return receiveBaseAmount Amount of base token received
+     */
     function sellQuote(address to) external nonReentrant returns (uint256 receiveBaseAmount) {
         uint256 quoteBalance = _QUOTE_TOKEN_.balanceOf(address(this)) - _MT_FEE_QUOTE_;
         uint256 quoteInput = quoteBalance - uint256(_QUOTE_RESERVE_);
         uint256 mtFee;
         uint256 newQuoteTarget;
         PMMPricing.RState newRState;
+        // calculate the amount of base token to receive and mt fee
         (receiveBaseAmount, mtFee, newRState, newQuoteTarget) = querySellQuote(
             tx.origin,
             quoteInput
         );
-
+        // transfer base token to recipient
         _transferBaseOut(to, receiveBaseAmount);
+        // update mt fee in base token
         _MT_FEE_BASE_ = _MT_FEE_BASE_ + mtFee;
 
         // update TARGET
@@ -85,7 +99,7 @@ contract GSPTrader is GSPVault {
             _RState_ = uint32(newRState);
             emit RChange(newRState);
         }
-
+        // update reserve
         _setReserve((_BASE_TOKEN_.balanceOf(address(this)) - _MT_FEE_BASE_), quoteBalance);
 
         emit DODOSwap(
@@ -98,6 +112,13 @@ contract GSPTrader is GSPVault {
         );
     }
 
+    /**
+     * @notice inner flashloan, pay tokens out first, call external contract and check tokens left
+     * @param baseAmount The base token amount user require
+     * @param quoteAmount The quote token amount user require
+     * @param assetTo The address who uses above tokens
+     * @param data The external contract's callData
+     */
     function flashLoan(
         uint256 baseAmount,
         uint256 quoteAmount,
@@ -191,7 +212,15 @@ contract GSPTrader is GSPVault {
     }
 
     // ============ Query Functions ============
-
+    /**
+     * @notice Return swap result, for query, sellBase side. 
+     * @param trader Useless, just to keep the same interface with old version pool
+     * @param payBaseAmount The amount of base token user want to sell
+     * @return receiveQuoteAmount The amount of quote token user will receive
+     * @return mtFee The amount of mt fee charged
+     * @return newRState The new RState after swap
+     * @return newBaseTarget The new base target after swap
+     */
     function querySellBase(address trader, uint256 payBaseAmount)
         public
         view
@@ -213,7 +242,15 @@ contract GSPTrader is GSPVault {
             - mtFee;
         newBaseTarget = state.B0;
     }
-
+    /**
+     * @notice Return swap result, for query, sellQuote side
+     * @param trader Useless, just for keeping the same interface with old version pool
+     * @param payQuoteAmount The amount of quote token user want to sell
+     * @return receiveBaseAmount The amount of base token user will receive
+     * @return mtFee The amount of mt fee charged
+     * @return newRState The new RState after swap
+     * @return newQuoteTarget The new quote target after swap
+     */
     function querySellQuote(address trader, uint256 payQuoteAmount)
         public
         view

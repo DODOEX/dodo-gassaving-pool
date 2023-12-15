@@ -33,7 +33,13 @@ library PMMPricing {
     }
 
     // ============ buy & sell ============
-
+    /**
+     * @notice Inner calculation based on pmm algorithm, sell base
+     * @param state The current PMM state
+     * @param payBaseAmount The amount of base token user want to sell
+     * @return receiveQuoteAmount The amount of quote token user will receive
+     * @return newR The new R status after swap
+     */
     function sellBaseToken(PMMState memory state, uint256 payBaseAmount)
         internal
         pure
@@ -77,6 +83,13 @@ library PMMPricing {
         }
     }
 
+    /**
+     * @notice Inner calculation based on pmm algorithm, sell quote
+     * @param state The current PMM state
+     * @param payQuoteAmount The amount of quote token user want to sell
+     * @return receiveBaseAmount The amount of base token user will receive
+     * @return newR The new R status after swap
+     */
     function sellQuoteToken(PMMState memory state, uint256 payQuoteAmount)
         internal
         pure
