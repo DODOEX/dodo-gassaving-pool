@@ -20,16 +20,17 @@ import {GSPVault} from "./GSPVault.sol";
  * @notice DODO GasSavingPool initialization
  */
 contract GSP is GSPTrader, GSPFunding {
-    /// @notice this function will be called in factory, init risk should not be included.
-    /// @dev the token addresses should be valid, and the i and k should not exceed the limits.
-    /// @param maintainer dodo's address, who can claim mtFee and own this pool
-    /// @param baseTokenAddress base token's address
-    /// @param quoteTokenAddress quote token's address
-    /// @param lpFeeRate rate of lp fee, with 18 decimal
-    /// @param mtFeeRate rate of mt fee, with 18 decimal
-    /// @param i oracle price, possible to be changed only by maintainer
-    /// @param k swap curve parameter
-    /// @param isOpenTWAP use TWAP price or not
+    /**
+     * @notice Function will be called in factory, init risk should not be included.
+     * @param maintainer The dodo's address, who can claim mtFee and own this pool
+     * @param baseTokenAddress The base token address
+     * @param quoteTokenAddress The quote token address
+     * @param lpFeeRate The rate of lp fee, with 18 decimal
+     * @param mtFeeRate The rate of mt fee, with 18 decimal
+     * @param i The oracle price, possible to be changed only by maintainer
+     * @param k The swap curve parameter
+     * @param isOpenTWAP Use TWAP price or not
+     */
     function init(
         address maintainer,
         address baseTokenAddress,
@@ -94,10 +95,11 @@ contract GSP is GSPTrader, GSPFunding {
         );
         // ==========================================================================
     }
-
-    /// @notice Convert the address to a shorter string
-    /// @param _addr The address to convert
-    /// @return A string representation of _addr in hexadecimal
+    /**
+     * @notice Convert the address to a shorter string
+     * @param _addr The address to convert
+     * @return A string representation of _addr in hexadecimal
+     */
     function addressToShortString(address _addr) public pure returns (string memory) {
         bytes32 value = bytes32(uint256(uint160(_addr)));
         bytes memory alphabet = "0123456789abcdef";
@@ -111,8 +113,10 @@ contract GSP is GSPTrader, GSPFunding {
     }
 
     // ============ Version Control ============
-    /// @notice Query the version of DODOGasSavingPool
-    /// @return The current version is 1.0.1
+    /**
+     * @notice Return the version of DODOGasSavingPool
+     * @return The current version is 1.0.1
+     */
     function version() external pure returns (string memory) {
         return "GSP 1.0.1";
     }

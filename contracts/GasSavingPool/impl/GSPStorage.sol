@@ -13,7 +13,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {PMMPricing} from "../../lib/PMMPricing.sol";
 
-/// @notice this part focus on Lp tokens, mint and burn
+/// @notice this contract is used for store state and read state
 contract GSPStorage is ReentrancyGuard {
 
     // ============ Storage for Setup ============
@@ -127,7 +127,7 @@ contract GSPStorage is ReentrancyGuard {
         R = uint256(state.R);
     }
 
-    /// @notice Return the adjusted mid price of the GSP
+    /// @notice Return the adjusted mid price
     /// @return midPrice The current mid price
     function getMidPrice() public view returns (uint256 midPrice) {
         return PMMPricing.getMidPrice(getPMMState());
