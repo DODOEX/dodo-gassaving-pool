@@ -12,7 +12,7 @@ import {DecimalMath} from "../../lib/DecimalMath.sol";
 import {PMMPricing} from "../../lib/PMMPricing.sol";
 import {IDODOCallee} from "../../intf/IDODOCallee.sol";
 
-
+/// @notice this contract deal with swap
 contract GSPTrader is GSPVault {
 
     // ============ Events ============
@@ -32,6 +32,7 @@ contract GSPTrader is GSPVault {
 
     // ============ Trade Functions ============
 
+    /// @notice user sell base tokens, user pay tokens first. Must be used with a router
     function sellBase(address to) external nonReentrant returns (uint256 receiveQuoteAmount) {
         uint256 baseBalance = _BASE_TOKEN_.balanceOf(address(this)) - _MT_FEE_BASE_;
         uint256 baseInput = baseBalance - uint256(_BASE_RESERVE_);
@@ -64,6 +65,7 @@ contract GSPTrader is GSPVault {
         );
     }
 
+    /// @notice user sell base tokens, user pay tokens first. Must be used with a router
     function sellQuote(address to) external nonReentrant returns (uint256 receiveBaseAmount) {
         uint256 quoteBalance = _QUOTE_TOKEN_.balanceOf(address(this)) - _MT_FEE_QUOTE_;
         uint256 quoteInput = quoteBalance - uint256(_QUOTE_RESERVE_);
@@ -98,6 +100,11 @@ contract GSPTrader is GSPVault {
         );
     }
 
+    /// @notice inner flashloan, pay tokens out first, call external contract and check tokens left
+    /// @param baseAmount the base token amount user require
+    /// @param quoteAmount the quote token amount user require
+    /// @param assetTo address who uses above tokens
+    /// @param data external contract's callData
     function flashLoan(
         uint256 baseAmount,
         uint256 quoteAmount,
@@ -192,6 +199,9 @@ contract GSPTrader is GSPVault {
 
     // ============ Query Functions ============
 
+    /// @notice return swap result, for query, sellBase side. 
+    /// @param trader useless, just for keeping the same interface with old version pool
+    /// @param payBaseAmount fromAmount
     function querySellBase(address trader, uint256 payBaseAmount)
         public
         view
@@ -214,6 +224,9 @@ contract GSPTrader is GSPVault {
         newBaseTarget = state.B0;
     }
 
+    /// @notice return swap result, for query, sellQuote side
+    /// @param trader useless, just for keeping the same interface with old version pool
+    /// @param payQuoteAmount fromAmount
     function querySellQuote(address trader, uint256 payQuoteAmount)
         public
         view

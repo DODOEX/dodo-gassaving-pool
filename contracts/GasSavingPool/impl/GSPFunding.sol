@@ -12,6 +12,7 @@ import {GSPVault} from "./GSPVault.sol";
 import {DecimalMath} from "../../lib/DecimalMath.sol";
 import {IDODOCallee} from "../../intf/IDODOCallee.sol";
 
+/// @notice this part focus on Lp tokens, mint and burn
 contract GSPFunding is GSPVault {
     // ============ Events ============
 
@@ -21,7 +22,10 @@ contract GSPFunding is GSPVault {
 
     // ============ Buy & Sell Shares ============
 
-    // buy shares [round down]
+    /// @notice buy shares [round down], user mint Lp token and deposit tokens
+    /// @return shares the amount of lp token
+    /// @return baseInput the amount of base token user pay
+    /// @return quoteInput the amount of quote token user pay
     function buyShares(address to)
         external
         nonReentrant
@@ -64,7 +68,13 @@ contract GSPFunding is GSPVault {
         emit BuyShares(to, shares, _SHARES_[to]);
     }
 
-    // sell shares [round down]
+    /// @notice sell shares [round down], user burn their lp and withdraw their tokens
+    /// @param shareAmount the amount of lp tokens
+    /// @param to the one who receive tokens
+    /// @param baseMinAmount base token mininum amount returned back to users
+    /// @param quoteMinAmount quote token mininum amount returned back to users
+    /// @param data not neccessary
+    /// @param deadline deadline
     function sellShares(
         uint256 shareAmount,
         address to,

@@ -13,6 +13,7 @@ import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {PMMPricing} from "../../lib/PMMPricing.sol";
 
+/// @notice this contract is used for store state and read state
 contract GSPStorage is ReentrancyGuard {
 
     bool internal _GSP_INITIALIZED_;
@@ -68,6 +69,7 @@ contract GSPStorage is ReentrancyGuard {
 
     // ============ Helper Functions ============
 
+    /// @notice to get PMMState from inner or outside
     function getPMMState() public view returns (PMMPricing.PMMState memory state) {
         state.i = _I_;
         state.K = _K_;
@@ -79,6 +81,7 @@ contract GSPStorage is ReentrancyGuard {
         PMMPricing.adjustedTarget(state);
     }
 
+    /// @notice used for routeHelpers
     function getPMMStateForCall()
         external
         view
@@ -102,10 +105,12 @@ contract GSPStorage is ReentrancyGuard {
         R = uint256(state.R);
     }
 
+    /// @notice get adjusted mid price
     function getMidPrice() public view returns (uint256 midPrice) {
         return PMMPricing.getMidPrice(getPMMState());
     }
 
+    /// @notice total mtFee maintainer can claim
     function getMtFeeTotal() public view returns (uint256 mtFeeBase, uint256 mtFeeQuote) {
         mtFeeBase = _MT_FEE_BASE_;
         mtFeeQuote = _MT_FEE_QUOTE_;

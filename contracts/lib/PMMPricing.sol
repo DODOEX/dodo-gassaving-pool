@@ -34,6 +34,7 @@ library PMMPricing {
 
     // ============ buy & sell ============
 
+    /// @notice inner calculation based on pmm algorithm, sell base
     function sellBaseToken(PMMState memory state, uint256 payBaseAmount)
         internal
         pure
@@ -77,6 +78,7 @@ library PMMPricing {
         }
     }
 
+    /// @notice inner calculation based on pmm algorithm, sell quote
     function sellQuoteToken(PMMState memory state, uint256 payQuoteAmount)
         internal
         pure

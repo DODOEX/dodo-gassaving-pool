@@ -40,6 +40,8 @@ contract GSPVault is GSPStorage {
         quoteReserve = _QUOTE_RESERVE_;
     }
 
+    /// @notice get fee rate. Keep the same interface with old version pool.
+    /// @param user useless
     function getUserFeeRate(address user) 
         external 
         view 
@@ -61,6 +63,7 @@ contract GSPVault is GSPStorage {
 
     // ============ TWAP UPDATE ===========
 
+    /// @notice for twap
     function _twapUpdate() internal {
         uint32 blockTimestamp = uint32(block.timestamp % 2**32);
         uint32 timeElapsed = blockTimestamp - _BLOCK_TIMESTAMP_LAST_;
@@ -80,6 +83,7 @@ contract GSPVault is GSPStorage {
         if (_IS_OPEN_TWAP_) _twapUpdate();
     }
 
+    /// @notice update reserve with true balance
     function _sync() internal {
         uint256 baseBalance = _BASE_TOKEN_.balanceOf(address(this)) - uint256(_MT_FEE_BASE_);
         uint256 quoteBalance = _QUOTE_TOKEN_.balanceOf(address(this)) - uint256(_MT_FEE_QUOTE_);
@@ -98,6 +102,7 @@ contract GSPVault is GSPStorage {
         _sync();
     }
 
+    /// @notice correct R State, details in pmm algorithm
     function correctRState() public {
         if (_RState_ == uint32(PMMPricing.RState.BELOW_ONE) && _BASE_RESERVE_<_BASE_TARGET_) {
           _RState_ = uint32(PMMPricing.RState.ONE);
@@ -111,12 +116,15 @@ contract GSPVault is GSPStorage {
         }
     }
 
+    /// @notice priceLimit is used for oracle change protection. 
+    /// @notice It sets a ratio where the relative deviation between the new price and the old price cannot exceed this ratio.
     function adjustPriceLimit(uint256 priceLimit) external onlyMaintainer {
         // the default priceLimit is 1e3
         require(priceLimit <= 1e6, "INVALID_PRICE_LIMIT");
         _PRICE_LIMIT_ = priceLimit;
     }
 
+    /// @notice adjust oricle price, i ,only for maintainer
     function adjustPrice(uint256 i) external onlyMaintainer {
         // the difference between i and _I_ should be less than priceLimit
         uint256 offset = i > _I_ ? i - _I_ : _I_ - i;
@@ -124,6 +132,7 @@ contract GSPVault is GSPStorage {
         _I_ = i;
     }
 
+    /// @notice adjust mtFee rate, only for maintainer
     function adjustMtFeeRate(uint256 mtFeeRate) external onlyMaintainer {
         require(mtFeeRate <= 10**18, "INVALID_MT_FEE_RATE");
         _MT_FEE_RATE_ = mtFeeRate;
@@ -143,6 +152,7 @@ contract GSPVault is GSPStorage {
         }
     }
 
+    /// @notice maintainer withdraw mtFee
     function withdrawMtFeeTotal() external nonReentrant onlyMaintainer {
         uint256 mtFeeQuote = _MT_FEE_QUOTE_;
         uint256 mtFeeBase = _MT_FEE_BASE_;
