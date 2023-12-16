@@ -14,12 +14,21 @@ import {GSPFunding} from "./GSPFunding.sol";
 import {GSPVault} from "./GSPVault.sol";
 
 /**
- * @title DODO StablePool
+ * @title DODO Gas Saving Pool
  * @author DODO Breeder
  *
- * @notice DODOStablePool initialization
+ * @notice DODO GSP initialization
  */
 contract GSP is GSPTrader, GSPFunding {
+    /// @notice this function will be called in factory, init risk should not be included.
+    /// @param maintainer dodo's address, who can claim mtFee and own this pool
+    /// @param baseTokenAddress base token's address
+    /// @param quoteTokenAddress quote token's address
+    /// @param lpFeeRate rate of lp fee, with 18 decimal
+    /// @param mtFeeRate rate of mt fee, with 18 decimal
+    /// @param i oracle price, possible to be changed only by maintainer
+    /// @param k swap curve parameter
+    /// @param isOpenTWAP use TWAP price or not
     function init(
         address maintainer,
         address baseTokenAddress,
@@ -75,6 +84,7 @@ contract GSP is GSPTrader, GSPFunding {
         // ==========================================================================
     }
 
+    /// @notice shorter token name
     function addressToShortString(address _addr) public pure returns (string memory) {
         bytes32 value = bytes32(uint256(uint160(_addr)));
         bytes memory alphabet = "0123456789abcdef";
