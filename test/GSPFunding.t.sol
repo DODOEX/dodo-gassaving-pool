@@ -117,7 +117,7 @@ contract TestGSPFunding is Test {
         usdc.transfer(address(gsp), QUOTE_RESERVE);
         gsp.buyShares(USER);
         uint256 shares = gsp.balanceOf(USER) + 1000;
-        vm.expectRevert("DLP_NOT_ENOUGH");
+        vm.expectRevert("GLP_NOT_ENOUGH");
         gsp.sellShares(shares, USER, 0, 0, "", block.timestamp);
     }
 
