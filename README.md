@@ -10,6 +10,12 @@ Inheritaged a template using Foundry && HardHat architecture. We use foundry tes
 
 link: [https://www.diffchecker.com/Cl4eG2Xg/](https://www.diffchecker.com/Cl4eG2Xg/)
 
+## Test
+The test of GSP implemets Foundry framework, and you can run the test using Foundry test command.
+
+The test should be runned with forking ETH mainnet. You can set an `env.` first, then run the tests with `--fork-url $ETH_RPC_URL `.
+
+
 ## Motivation
 
 With this new architecture, we can get:
