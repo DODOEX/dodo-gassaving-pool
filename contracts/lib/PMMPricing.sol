@@ -65,6 +65,7 @@ library PMMPricing {
                     receiveQuoteAmount = backToOneReceiveQuote;
                 }
             } else if (payBaseAmount == backToOnePayBase) {
+                require(state.B0 > 0, "TARGET_IS_ZERO");
                 // case 2.2: R status changes to ONE
                 receiveQuoteAmount = backToOneReceiveQuote;
                 newR = RState.ONE;
@@ -105,17 +106,18 @@ library PMMPricing {
             uint256 backToOnePayQuote = state.Q0 - state.Q;
             uint256 backToOneReceiveBase = state.B - state.B0;
             if (payQuoteAmount < backToOnePayQuote) {
-                receiveBaseAmount = _RBelowSellQuoteToken(state, payQuoteAmount);
+                receiveBaseAmount = _RBelowSellQuoteToken(state, payQuoteAmount); 
                 newR = RState.BELOW_ONE;
                 if (receiveBaseAmount > backToOneReceiveBase) {
                     receiveBaseAmount = backToOneReceiveBase;
                 }
             } else if (payQuoteAmount == backToOnePayQuote) {
+                require(state.Q0 > 0, "TARGET_IS_ZERO");
                 receiveBaseAmount = backToOneReceiveBase;
                 newR = RState.ONE;
             } else {
                 receiveBaseAmount = backToOneReceiveBase + (
-                    _ROneSellQuoteToken(state, payQuoteAmount - backToOnePayQuote)
+                    _ROneSellQuoteToken(state, payQuoteAmount - backToOnePayQuote) 
                 );
                 newR = RState.ABOVE_ONE;
             }

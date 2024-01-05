@@ -27,7 +27,7 @@ interface IGSP {
 
     function getVaultReserve() external view returns (uint256 baseReserve, uint256 quoteReserve);
 
-    function getFeeRate() external view returns (uint256 lpFeeRate, uint256 mtFeeRate);
+    function getUserFeeRate(address user) external view returns (uint256 lpFeeRate, uint256 mtFeeRate);
 
     function getMtFeeTotal() external view returns (uint256 mtFeeBase, uint256 mtFeeQuote);
 
@@ -35,6 +35,7 @@ interface IGSP {
 
     function sellQuote(address to) external returns (uint256);
 
-    function buyShares(address to) external returns (uint256,uint256,uint256);
+    function buyShares(address to) external returns (uint256 shares, uint256 baseInput, uint256 quoteInput);
 
+    function sellShares(uint256 shareAmount, address to, uint256 baseMinAmount, uint256 quoteMinAmount, bytes calldata data, uint256 deadline) external returns (uint256 baseAmount, uint256 quoteAmount);
 }

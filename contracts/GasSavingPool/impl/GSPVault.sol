@@ -84,15 +84,11 @@ contract GSPVault is GSPStorage {
      * @dev The twap price is updated when _IS_OPEN_TWAP_ is true
      */
     function _twapUpdate() internal {
-        // blockTimestamp is the timestamp of the current block
         uint32 blockTimestamp = uint32(block.timestamp % 2**32);
-        // timeElapsed is the time elapsed since the last update
         uint32 timeElapsed = blockTimestamp - _BLOCK_TIMESTAMP_LAST_;
-        // if timeElapsed is greater than 0 and the reserves are not 0, update the twap price
         if (timeElapsed > 0 && _BASE_RESERVE_ != 0 && _QUOTE_RESERVE_ != 0) {
             _BASE_PRICE_CUMULATIVE_LAST_ += getMidPrice() * timeElapsed;
         }
-        // update the last block timestamp
         _BLOCK_TIMESTAMP_LAST_ = blockTimestamp;
     }
 
@@ -107,7 +103,6 @@ contract GSPVault is GSPStorage {
         require(baseReserve <= type(uint112).max && quoteReserve <= type(uint112).max, "OVERFLOW");
         _BASE_RESERVE_ = uint112(baseReserve);
         _QUOTE_RESERVE_ = uint112(quoteReserve);
-        // if _IS_OPEN_TWAP_ is true, update the twap price
         if (_IS_OPEN_TWAP_) _twapUpdate();
     }
 
@@ -120,14 +115,12 @@ contract GSPVault is GSPStorage {
         uint256 quoteBalance = _QUOTE_TOKEN_.balanceOf(address(this)) - uint256(_MT_FEE_QUOTE_);
         // the reserves should be less than the max uint112
         require(baseBalance <= type(uint112).max && quoteBalance <= type(uint112).max, "OVERFLOW");
-        // if the current reserves are not equal to the recorded reserves, update the reserves
         if (baseBalance != _BASE_RESERVE_) {
             _BASE_RESERVE_ = uint112(baseBalance);
         }
         if (quoteBalance != _QUOTE_RESERVE_) {
             _QUOTE_RESERVE_ = uint112(quoteBalance);
         }
-        // if _IS_OPEN_TWAP_ is true, update the twap price
         if (_IS_OPEN_TWAP_) _twapUpdate();
     }
 
@@ -317,7 +310,7 @@ contract GSPVault is GSPStorage {
         bytes32 r,
         bytes32 s
     ) external {
-        require(deadline >= block.timestamp, "DODO_DSP_LP: EXPIRED");
+        require(deadline >= block.timestamp, "DODO_GSP_LP: EXPIRED");
         bytes32 digest =
             keccak256(
                 abi.encodePacked(
@@ -339,7 +332,7 @@ contract GSPVault is GSPStorage {
         address recoveredAddress = ecrecover(digest, v, r, s);
         require(
             recoveredAddress != address(0) && recoveredAddress == owner,
-            "DODO_DSP_LP: INVALID_SIGNATURE"
+            "DODO_GSP_LP: INVALID_SIGNATURE"
         );
         _approve(owner, spender, value);
     }
