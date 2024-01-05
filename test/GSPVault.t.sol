@@ -47,19 +47,19 @@ contract TestGSPVault is Test {
         mockQuoteToken.mint(USER, type(uint256).max);
     }
 
-    function test_getVaultReserve() public {
+    function testGetVaultReserve() public {
         (uint256 baseReserve, uint256 quoteReserve) = gsp.getVaultReserve();
         assertTrue(baseReserve == 0);
         assertTrue(quoteReserve == 0);
     }
 
-    function test_getUserFeeRate() public {
+    function testGetUserFeeRate() public {
         (uint256 lpFeeRate, uint256 mtFeeRate) = gsp.getUserFeeRate(msg.sender);
         assertTrue(lpFeeRate == LP_FEE_RATE);
         assertTrue(mtFeeRate == MT_FEE_RATE);
     }
 
-    function test_onlyMaintainerCanAdjustParams() public {
+    function testOnlyMaintainerCanAdjustParams() public {
         vm.startPrank(MAINTAINER);
         // adjust price limit
         gsp.adjustPriceLimit(1e4);
@@ -80,7 +80,7 @@ contract TestGSPVault is Test {
         assertTrue(mtFeeRateAfter == 2e13);
     }
 
-    function test_syncSucceed() public {
+    function testSyncSucceed() public {
         GSP gspTest = new GSP();
         gspTest.init(
             MAINTAINER,
@@ -102,7 +102,7 @@ contract TestGSPVault is Test {
         assertTrue(baseReserve == 1e18);
     }
 
-    function test_syncOverflow() public {
+    function testSyncOverflow() public {
         GSP gspTest = new GSP();
         gspTest.init(
             MAINTAINER,
@@ -121,7 +121,7 @@ contract TestGSPVault is Test {
         gspTest.sync();
     }
 
-    function test_withdrawMtFeeTotal() public {
+    function testWithdrawMtFeeTotal() public {
         // buy shares
         vm.startPrank(DAI_WHALE);
         dai.transfer(USER, (BASE_RESERVE + BASE_INPUT));
@@ -150,7 +150,7 @@ contract TestGSPVault is Test {
         assertEq(daiBalanceAfter - daiBalanceBefore, mtFeeBaseBefore - mtFeeBaseAfter);
     }
 
-    function test_correctRState() public {
+    function testCorrectRState() public {
         // buy shares
         vm.startPrank(DAI_WHALE);
         dai.transfer(USER, BASE_RESERVE + BASE_INPUT);
@@ -195,7 +195,7 @@ contract TestGSPVault is Test {
         assertTrue(gsp._QUOTE_TARGET_() == gsp._QUOTE_RESERVE_());
     }
 
-    function test_permitSucceed() public {
+    function testPermitSucceed() public {
         uint256 userPrivateKey = 1;
         vm.startPrank(USER);
         uint256 value = gsp.balanceOf(USER);
@@ -221,7 +221,7 @@ contract TestGSPVault is Test {
         gsp.permit(USER, OTHER, value, deadline, v, r, s);
     }
 
-    function test_permitWithInvalidSignature() public {
+    function testPermitWithInvalidSignature() public {
         uint256 otherPrivateKey = 2;
         vm.startPrank(OTHER);
         uint256 value = gsp.balanceOf(USER);
@@ -244,11 +244,11 @@ contract TestGSPVault is Test {
                 )
             );
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(otherPrivateKey, digest);
-        vm.expectRevert("DODO_DSP_LP: INVALID_SIGNATURE");
+        vm.expectRevert("DODO_GSP_LP: INVALID_SIGNATURE");
         gsp.permit(USER, OTHER, value, deadline, v, r, s);
     }
 
-    function test_permitWhenTimeExpired() public {
+    function testPermitWhenTimeExpired() public {
         uint256 value = gsp.balanceOf(USER);
         uint256 privKey = 1;
         uint256 deadline = block.timestamp - 100000;
@@ -271,42 +271,42 @@ contract TestGSPVault is Test {
             );
 
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privKey, digest);
-        vm.expectRevert("DODO_DSP_LP: EXPIRED");
+        vm.expectRevert("DODO_GSP_LP: EXPIRED");
         gsp.permit(USER, OTHER, value, deadline, v, r, s);
     }
 
 
-    function test_adjustPriceLimitIsInvalid() public{
+    function testAdjustPriceLimitIsInvalid() public{
         vm.startPrank(MAINTAINER);
         vm.expectRevert("INVALID_PRICE_LIMIT");
         gsp.adjustPriceLimit(1e7);
     }
     
-    function test_adjustPriceExceedPriceLimit() public{
+    function testAdjustPriceExceedPriceLimit() public{
         vm.startPrank(MAINTAINER);
         vm.expectRevert("EXCEED_PRICE_LIMIT");
         gsp.adjustPrice((2e6));
     }
 
-    function test_adjustMtFeeRateIsInvalid() public{
+    function testAdjustMtFeeRateIsInvalid() public{
         vm.startPrank(MAINTAINER);
         vm.expectRevert("INVALID_MT_FEE_RATE");
         gsp.adjustMtFeeRate(2e19);
     }
 
-    function test_transferSharesWhenBalanceIsNotEnough() public{
+    function testTransferSharesWhenBalanceIsNotEnough() public{
         vm.startPrank(USER);
         vm.expectRevert("BALANCE_NOT_ENOUGH");
         gsp.transfer(OTHER, 1e18);
     }
 
-    function test_transferFromSharesWhenBalanceIsNotEnough() public{
+    function testTransferFromSharesWhenBalanceIsNotEnough() public{
         vm.startPrank(OTHER);
         vm.expectRevert("BALANCE_NOT_ENOUGH");
         gsp.transferFrom(USER, OTHER, 1e18);
     }
 
-    function test_transferFromSharesWhenAllowanceIsNotEnough() public{
+    function testTransferFromSharesWhenAllowanceIsNotEnough() public{
         // buy shares
         vm.startPrank(DAI_WHALE);
         dai.transfer(USER, BASE_RESERVE);
@@ -326,7 +326,7 @@ contract TestGSPVault is Test {
         gsp.transferFrom(USER, OTHER, amount);
     }
 
-    function test_buySharesWithOnlyBaseInput() public {
+    function testBuySharesWithOnlyBaseInput() public {
         // buy shares
         vm.startPrank(DAI_WHALE);
         dai.transfer(USER, BASE_RESERVE);
@@ -337,7 +337,7 @@ contract TestGSPVault is Test {
         gsp.buyShares(USER);
     }
 
-    function test_setReserveWithOverflow() public {
+    function testSetReserveWithOverflow() public {
         GSP gspTest = new GSP();
         gspTest.init(
             MAINTAINER,

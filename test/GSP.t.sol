@@ -28,7 +28,7 @@ contract TestGSPVault is Test {
         gsp = new GSP();
     }
 
-    function test_init() public {
+    function testInit() public {
         // Init params
         address MAINTAINER = 0x95C4F5b83aA70810D4f142d58e5F7242Bd891CB0;
         address BASE_TOKEN_ADDRESS = DAI;
@@ -61,16 +61,16 @@ contract TestGSPVault is Test {
         assertTrue(gsp._IS_OPEN_TWAP_() == IS_OPEN_TWAP);
     }
 
-    function test_getVersion() public {
+    function testGetVersion() public {
         assertEq(sha256(abi.encodePacked(gsp.version())), sha256(abi.encodePacked("GSP 1.0.1")));
     }
 
-    function test_addressToShortString() public {
+    function testAddressToShortString() public {
         string memory str = gsp.addressToShortString(address(gsp));
         assertEq(sha256(abi.encodePacked(str)), sha256(abi.encodePacked("5615deb7")));
     }
 
-    function test_twapUpdate() public {
+    function testTwapUpdate() public {
         // set is_open_twap to true
         address MAINTAINER = 0x95C4F5b83aA70810D4f142d58e5F7242Bd891CB0;
         address BASE_TOKEN_ADDRESS = DAI;
@@ -116,7 +116,7 @@ contract TestGSPVault is Test {
         assertTrue(blockTimestampAfter > blockTimestampBefore);
     }
 
-    function test_initFail() public {
+    function testInitFail() public {
         // Init params
         address MAINTAINER = 0x95C4F5b83aA70810D4f142d58e5F7242Bd891CB0;
         address BASE_TOKEN_ADDRESS = DAI;

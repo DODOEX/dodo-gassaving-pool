@@ -41,7 +41,7 @@ contract TestGSPFunding is Test {
         vm.stopPrank();
     }
 
-    function test_buySharesForTwice() public {
+    function testBuySharesForTwice() public {
         vm.startPrank(USER);
         // dai.transfer(address(gsp), BASE_RESERVE);
         // vm.expectRevert();
@@ -58,7 +58,7 @@ contract TestGSPFunding is Test {
         vm.stopPrank();
     }
 
-    function test_userTransferSharesToOther() public {
+    function testUserTransferSharesToOther() public {
         // User buys shares
         vm.startPrank(USER);
         dai.transfer(address(gsp), BASE_RESERVE);
@@ -73,7 +73,7 @@ contract TestGSPFunding is Test {
         assertTrue(otherShares == (userSharesBefore - userSharesAfter));
     }
 
-    function test_otherTransferSharesFromUser() public {
+    function testOtherTransferSharesFromUser() public {
         // User buys shares
         vm.startPrank(USER);
         dai.transfer(address(gsp), BASE_RESERVE);
@@ -94,14 +94,14 @@ contract TestGSPFunding is Test {
         assertTrue(otherShares == (userSharesBefore - userSharesAfter));
     }
 
-    function test_buySharesWithNoBaseInput() public {
+    function testBuySharesWithNoBaseInput() public {
         vm.startPrank(USER);
         usdc.transfer(address(gsp), QUOTE_RESERVE);
         vm.expectRevert("NO_BASE_INPUT");
         gsp.buyShares(USER);
     }
 
-    function test_sellSharesWhenTimeExpired() public {
+    function testSellSharesWhenTimeExpired() public {
         vm.startPrank(USER);
         dai.transfer(address(gsp), BASE_RESERVE);
         usdc.transfer(address(gsp), QUOTE_RESERVE);
@@ -111,7 +111,7 @@ contract TestGSPFunding is Test {
         gsp.sellShares(shares, USER, 0, 0, "", block.timestamp - 100000);
     }
 
-    function test_sellSharesWhenDLPIsNotEnough() public {
+    function testSellSharesWhenDLPIsNotEnough() public {
         vm.startPrank(USER);
         dai.transfer(address(gsp), BASE_RESERVE);
         usdc.transfer(address(gsp), QUOTE_RESERVE);
@@ -121,7 +121,7 @@ contract TestGSPFunding is Test {
         gsp.sellShares(shares, USER, 0, 0, "", block.timestamp);
     }
 
-    function test_sellSharesWhenWithdrawNotEnough() public {
+    function testSellSharesWhenWithdrawNotEnough() public {
         vm.startPrank(USER);
         dai.transfer(address(gsp), BASE_RESERVE);
         usdc.transfer(address(gsp), QUOTE_RESERVE);
@@ -131,7 +131,7 @@ contract TestGSPFunding is Test {
         gsp.sellShares(shares, USER, type(uint256).max, type(uint256).max, "", block.timestamp);
     }
 
-    function test_sellSharesWithDataIsNotEmpty() public {
+    function testSellSharesWithDataIsNotEmpty() public {
         vm.startPrank(USER);
         dai.transfer(address(gsp), BASE_RESERVE);
         usdc.transfer(address(gsp), QUOTE_RESERVE);

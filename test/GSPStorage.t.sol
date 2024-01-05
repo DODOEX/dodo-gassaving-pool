@@ -21,13 +21,13 @@ contract TestGSPStorage is Test {
         gsp = deployGSP.run();
     }
 
-    function test_getMtFeeTotal() public {
+    function testGetMtFeeTotal() public {
         (uint256 mtFeeBase, uint256 mtFeeQuote) = gsp.getMtFeeTotal();
         assertTrue(mtFeeBase == 0);
         assertTrue(mtFeeQuote == 0);
     }
 
-    function test_getPMMStateForCall() public {
+    function testGetPMMStateForCall() public {
         (
             uint256 I,
             uint256 K,

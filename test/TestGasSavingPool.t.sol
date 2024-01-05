@@ -44,7 +44,7 @@ contract TestGasSavingPool is Test {
     }
 
 
-    function test_buySharesAndSellShares() public {
+    function testBuySharesAndSellShares() public {
         uint256 loop = 2;
         // check PMMState
         gsp.getPMMState();
@@ -109,7 +109,7 @@ contract TestGasSavingPool is Test {
     }
 
 
-    function test_sellBase() public {
+    function testSellBase() public {
         uint256 loop = 2;
         // buy shares
         vm.startPrank(DAI_WHALE);
@@ -172,7 +172,7 @@ contract TestGasSavingPool is Test {
     }
 
 
-    function test_sellQuote() public {
+    function testSellQuote() public {
         uint256 loop = 2;
         // buy shares
         vm.startPrank(DAI_WHALE);
@@ -235,7 +235,7 @@ contract TestGasSavingPool is Test {
     }
 
 
-    function test_compareTwoPools() public {
+    function testCompareTwoPools() public {
         // check PMMState
         gsp.getPMMState();
         dsp.getPMMState();
@@ -291,7 +291,7 @@ contract TestGasSavingPool is Test {
     } 
 
 
-    function test_flashloan() public {
+    function testFlashloan() public {
         // buy shares
         vm.startPrank(DAI_WHALE);
         dai.transfer(USER, 2 * (BASE_RESERVE + BASE_INPUT));

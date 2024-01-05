@@ -22,7 +22,7 @@ contract TestGasFee is Test {
        stableSwap = new StableSwap();
     }
 
-    function test_compareGasFee() public {
+    function testCompareGasFee() public {
         stableSwap.dspAdvanced_addLiquidity();
         stableSwap.ogp_addLiquidity();
 

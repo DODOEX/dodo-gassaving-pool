@@ -65,7 +65,6 @@ library PMMPricing {
                     receiveQuoteAmount = backToOneReceiveQuote;
                 }
             } else if (payBaseAmount == backToOnePayBase) {
-                require(state.B0 > 0, "TARGET_IS_ZERO");
                 // case 2.2: R status changes to ONE
                 receiveQuoteAmount = backToOneReceiveQuote;
                 newR = RState.ONE;
@@ -112,7 +111,6 @@ library PMMPricing {
                     receiveBaseAmount = backToOneReceiveBase;
                 }
             } else if (payQuoteAmount == backToOnePayQuote) {
-                require(state.Q0 > 0, "TARGET_IS_ZERO");
                 receiveBaseAmount = backToOneReceiveBase;
                 newR = RState.ONE;
             } else {
