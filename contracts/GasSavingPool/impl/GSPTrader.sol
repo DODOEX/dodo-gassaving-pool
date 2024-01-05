@@ -43,11 +43,8 @@ contract GSPTrader is GSPVault {
         uint256 mtFee;
         uint256 newBaseTarget;
         PMMPricing.RState newRState;
-        // calculate the amount of quote token to receive and mt fee
         (receiveQuoteAmount, mtFee, newRState, newBaseTarget) = querySellBase(tx.origin, baseInput);
-        // transfer quote token to recipient
         _transferQuoteOut(to, receiveQuoteAmount);
-        // update mt fee in quote token
         _MT_FEE_QUOTE_ = _MT_FEE_QUOTE_ + mtFee;
         
 
@@ -58,7 +55,6 @@ contract GSPTrader is GSPVault {
             _RState_ = uint32(newRState);
             emit RChange(newRState);
         }
-        // update reserve
         _setReserve(baseBalance, _QUOTE_TOKEN_.balanceOf(address(this)) - _MT_FEE_QUOTE_);
 
         emit DODOSwap(
@@ -82,14 +78,11 @@ contract GSPTrader is GSPVault {
         uint256 mtFee;
         uint256 newQuoteTarget;
         PMMPricing.RState newRState;
-        // calculate the amount of base token to receive and mt fee
         (receiveBaseAmount, mtFee, newRState, newQuoteTarget) = querySellQuote(
             tx.origin,
             quoteInput
         );
-        // transfer base token to recipient
         _transferBaseOut(to, receiveBaseAmount);
-        // update mt fee in base token
         _MT_FEE_BASE_ = _MT_FEE_BASE_ + mtFee;
 
         // update TARGET
@@ -99,7 +92,6 @@ contract GSPTrader is GSPVault {
             _RState_ = uint32(newRState);
             emit RChange(newRState);
         }
-        // update reserve
         _setReserve((_BASE_TOKEN_.balanceOf(address(this)) - _MT_FEE_BASE_), quoteBalance);
 
         emit DODOSwap(

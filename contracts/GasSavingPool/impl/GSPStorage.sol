@@ -17,42 +17,27 @@ import {PMMPricing} from "../../lib/PMMPricing.sol";
 contract GSPStorage is ReentrancyGuard {
 
     // ============ Storage for Setup ============
-    // _GSP_INITIALIZED_ will be set to true when the init function is called
     bool internal _GSP_INITIALIZED_;
-    // GSP does not open TWAP by default
-    // _IS_OPEN_TWAP_ can be set to true when the init function is called
     bool public _IS_OPEN_TWAP_ = false;
     
     // ============ Core Address ============
-    // _MAINTAINER_ is the maintainer of GSP
     address public _MAINTAINER_;
-    // _BASE_TOKEN_ and _QUOTE_TOKEN_ should be ERC20 token
     IERC20 public _BASE_TOKEN_;
     IERC20 public _QUOTE_TOKEN_;
-    // _BASE_RESERVE_ and _QUOTE_RESERVE_ are the current reserves of the GSP
     uint112 public _BASE_RESERVE_;
     uint112 public _QUOTE_RESERVE_;
-    // _BLOCK_TIMESTAMP_LAST_ is used when calculating TWAP
     uint32 public _BLOCK_TIMESTAMP_LAST_;
-    // _BASE_PRICE_CUMULATIVE_LAST_ is used when calculating TWAP
     uint256 public _BASE_PRICE_CUMULATIVE_LAST_;
 
-    // _BASE_TARGET_ and _QUOTE_TARGET_ are recalculated when the pool state changes
     uint112 public _BASE_TARGET_;
     uint112 public _QUOTE_TARGET_;
-    // _RState_ is the current R state of the GSP
     uint32 public _RState_;
 
     // ============ Shares (ERC20) ============
-    // symbol is the symbol of the shares
     string public symbol;
-    // decimals is the decimals of the shares
     uint8 public decimals;
-    // name is the name of the shares
     string public name;
-    // totalSupply is the total supply of the shares
     uint256 public totalSupply;
-    // _SHARES_ is the mapping from account to share balance, record the share balance of each account
     mapping(address => uint256) internal _SHARES_;
     mapping(address => mapping(address => uint256)) internal _ALLOWED_;
 
@@ -65,9 +50,7 @@ contract GSPStorage is ReentrancyGuard {
     mapping(address => uint256) public nonces;
 
     // ============ Variables for Pricing ============
-    // _MT_FEE_RATE_ is the fee rate of mt fee
     uint256 public _MT_FEE_RATE_;
-    // _LP_FEE_RATE_ is the fee rate of lp fee
     uint256 public _LP_FEE_RATE_;
     uint256 public _K_;
     uint256 public _I_;
@@ -75,9 +58,7 @@ contract GSPStorage is ReentrancyGuard {
     uint256 public _PRICE_LIMIT_ = 1e3;
 
     // ============ Mt Fee ============
-    // _MT_FEE_BASE_ represents the mt fee in base token
     uint256 public _MT_FEE_BASE_;
-    // _MT_FEE_QUOTE_ represents the mt fee in quote token
     uint256 public _MT_FEE_QUOTE_;
 
     // ============ Helper Functions ============

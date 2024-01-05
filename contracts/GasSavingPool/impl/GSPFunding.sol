@@ -37,29 +37,23 @@ contract GSPFunding is GSPVault {
             uint256 quoteInput
         )
     {
-        // The balance of baseToken and quoteToken should be the balance minus the fee
         uint256 baseBalance = _BASE_TOKEN_.balanceOf(address(this)) - _MT_FEE_BASE_;
         uint256 quoteBalance = _QUOTE_TOKEN_.balanceOf(address(this)) - _MT_FEE_QUOTE_;
-        // The reserve of baseToken and quoteToken
         uint256 baseReserve = _BASE_RESERVE_;
         uint256 quoteReserve = _QUOTE_RESERVE_;
 
-        // The amount of baseToken and quoteToken user transfer to GSP
         baseInput = baseBalance - baseReserve;
         quoteInput = quoteBalance - quoteReserve;
 
-        // BaseToken should be transferred to GSP before calling buyShares
         require(baseInput > 0, "NO_BASE_INPUT");
 
         // Round down when withdrawing. Therefore, never be a situation occuring balance is 0 but totalsupply is not 0
         // But May Happen，reserve >0 But totalSupply = 0
         if (totalSupply == 0) {
             // case 1. initial supply
-            // The shares will be minted to user
             shares = quoteBalance < DecimalMath.mulFloor(baseBalance, _I_)
                 ? DecimalMath.divFloor(quoteBalance, _I_)
                 : baseBalance;
-            // The target will be updated
             _BASE_TARGET_ = uint112(shares);
             _QUOTE_TARGET_ = uint112(DecimalMath.mulFloor(shares, _I_));
         } else if (baseReserve > 0 && quoteReserve > 0) {
@@ -67,15 +61,12 @@ contract GSPFunding is GSPVault {
             uint256 baseInputRatio = DecimalMath.divFloor(baseInput, baseReserve);
             uint256 quoteInputRatio = DecimalMath.divFloor(quoteInput, quoteReserve);
             uint256 mintRatio = quoteInputRatio < baseInputRatio ? quoteInputRatio : baseInputRatio;
-            // The shares will be minted to user
             shares = DecimalMath.mulFloor(totalSupply, mintRatio);
 
-            // The target will be updated
             _BASE_TARGET_ = uint112(uint256(_BASE_TARGET_) + (DecimalMath.mulFloor(uint256(_BASE_TARGET_), mintRatio)));
             _QUOTE_TARGET_ = uint112(uint256(_QUOTE_TARGET_) + (DecimalMath.mulFloor(uint256(_QUOTE_TARGET_), mintRatio)));
         }
-        // The shares will be minted to user
-        // The reserve will be updated
+
         _mint(to, shares);
         _setReserve(baseBalance, quoteBalance);
         emit BuyShares(to, shares, _SHARES_[to]);
@@ -97,34 +88,25 @@ contract GSPFunding is GSPVault {
         bytes calldata data,
         uint256 deadline
     ) external nonReentrant returns (uint256 baseAmount, uint256 quoteAmount) {
-        // The deadline should be greater than current timestamp
         require(deadline >= block.timestamp, "TIME_EXPIRED");
-        // The amount of shares user want to sell should be less than user's balance
         require(shareAmount <= _SHARES_[msg.sender], "GLP_NOT_ENOUGH");
 
-        // The balance of baseToken and quoteToken should be the balance minus the fee
         uint256 baseBalance = _BASE_TOKEN_.balanceOf(address(this)) - _MT_FEE_BASE_;
         uint256 quoteBalance = _QUOTE_TOKEN_.balanceOf(address(this)) - _MT_FEE_QUOTE_;
-        // The total shares of GSP
         uint256 totalShares = totalSupply;
 
-        // The amount of baseToken and quoteToken user will receive is calculated by the ratio of user's shares to total shares
         baseAmount = baseBalance * shareAmount / totalShares;
         quoteAmount = quoteBalance * shareAmount / totalShares;
         
-        // The target will be updated
         _BASE_TARGET_ = uint112(uint256(_BASE_TARGET_) - DecimalMath._divCeil((uint256(_BASE_TARGET_) * (shareAmount)), totalShares));
         _QUOTE_TARGET_ = uint112(uint256(_QUOTE_TARGET_) - DecimalMath._divCeil((uint256(_QUOTE_TARGET_) * (shareAmount)), totalShares));
         
-        // The calculated baseToken and quoteToken amount should geater than minBaseToken and minQuoteToken
         require(
             baseAmount >= baseMinAmount && quoteAmount >= quoteMinAmount,
             "WITHDRAW_NOT_ENOUGH"
         );
 
-        // The shares will be burned from user
-        // The baseToken and quoteToken will be transferred to user
-        // The reserve will be synced
+
         _burn(msg.sender, shareAmount);
         _transferBaseOut(to, baseAmount);
         _transferQuoteOut(to, quoteAmount);

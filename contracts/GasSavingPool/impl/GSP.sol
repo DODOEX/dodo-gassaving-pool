@@ -41,40 +41,27 @@ contract GSP is GSPTrader, GSPFunding {
         uint256 k,
         bool isOpenTWAP
     ) external {
-        // GSP can only be initialized once
         require(!_GSP_INITIALIZED_, "GSP_INITIALIZED");
-        // _GSP_INITIALIZED_ is set to true after initialization
         _GSP_INITIALIZED_ = true;
-        // baseTokenAddress and quoteTokenAddress should not be the same
         require(baseTokenAddress != quoteTokenAddress, "BASE_QUOTE_CAN_NOT_BE_SAME");
-        // _BASE_TOKEN_ and _QUOTE_TOKEN_ should be valid ERC20 tokens
         _BASE_TOKEN_ = IERC20(baseTokenAddress);
         _QUOTE_TOKEN_ = IERC20(quoteTokenAddress);
 
-        // i should be greater than 0 and less than 10**36
         require(i > 0 && i <= 10**36);
         _I_ = i;
-        // k should be greater than 0 and less than 10**18
         require(k <= 10**18);
         _K_ = k;
 
-        // _LP_FEE_RATE_ is set when initialization
         _LP_FEE_RATE_ = lpFeeRate;
-        // _MT_FEE_RATE_ is set when initialization
         _MT_FEE_RATE_ = mtFeeRate;
-        // _MAINTAINER_ is set when initialization, the address receives the fee
         _MAINTAINER_ = maintainer;
         _IS_OPEN_TWAP_ = isOpenTWAP;
-        // if _IS_OPEN_TWAP_ is true, _BLOCK_TIMESTAMP_LAST_ is set to the current block timestamp
         if (isOpenTWAP) _BLOCK_TIMESTAMP_LAST_ = uint32(block.timestamp % 2**32);
 
         string memory connect = "_";
         string memory suffix = "GSP";
-        // name of the shares is the combination of suffix, connect and string of the GSP
         name = string(abi.encodePacked(suffix, connect, addressToShortString(address(this))));
-        // symbol of the shares is GLP
         symbol = "GLP";
-        // decimals of the shares is the same as the base token decimals
         decimals = IERC20Metadata(baseTokenAddress).decimals();
 
         // ============================== Permit ====================================
