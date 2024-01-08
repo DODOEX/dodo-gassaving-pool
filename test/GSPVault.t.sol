@@ -333,6 +333,16 @@ contract TestGSPVault is Test {
         vm.stopPrank();
         vm.startPrank(USER);
         dai.transfer(address(gsp), BASE_RESERVE);
+        vm.expectRevert("ZERO_QUOTE_AMOUNT");
+        gsp.buyShares(USER);
+    }
+
+    function testBugShareNotEnough() public {
+        deal(DAI, USER, 1);
+        deal(USDC, USER, 1);
+        vm.startPrank(USER);
+        dai.transfer(address(gsp), 1);
+        usdc.transfer(address(gsp), 1);
         vm.expectRevert("MINT_AMOUNT_NOT_ENOUGH");
         gsp.buyShares(USER);
     }
