@@ -211,14 +211,14 @@ contract TestGasSavingPool is Test {
             gsp.getPMMState();
             dsp.getPMMState();
             assertEq(receiveBaseAmount1, receiveBaseAmount2, "gsp receiveBaseAmount != dsp receiveBaseAmount");
-            uint256 tmp = i == 0 ? 1999730072785929125 : 1998897790924520164 ;
+            uint256 tmp = i == 0 ? 1999730072785929125 : 1998897790924520174 ;
             assertEq(receiveBaseAmount1, tmp);
 
             // check baseReserve, quoteReserve
             (baseReserve1, quoteReserve1) = gsp.getVaultReserve();
             (baseReserve2, quoteReserve2) = dsp.getVaultReserve();
             assertEq(baseReserve1, baseReserve2, "gsp baseReserve != dsp baseReserve");
-            tmp = i == 0 ? 8000249929713368009 : 6001332149611046822;
+            tmp = i == 0 ? 8000249929713368009 : 6001332149611046812;
             assertEq(baseReserve1, tmp);
             assertEq(quoteReserve1, quoteReserve2, "gsp quoteReserve != dsp quoteReserve");
             tmp = i == 0 ? 12000000 : 14000000;

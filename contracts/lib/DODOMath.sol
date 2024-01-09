@@ -156,7 +156,7 @@ library DODOMath {
         // bAbs = abs(part1-part2)
         // if part1>part2 => b is negative => bSig is false
         // if part2>part1 => b is positive => bSig is true
-        uint256 part2 = k * (V0) / (V1) * (V0) + (i * (delta)); // kQ0^2/Q1-i*deltaB
+        uint256 part2 = k * (V0) * (V0) / (V1) + (i * (delta)); // kQ0^2/Q1-i*deltaB
         uint256 bAbs = (DecimalMath.ONE - k) * (V1); // (1-k)Q1
 
         bool bSig;
