@@ -76,25 +76,34 @@ contract GSP is GSPTrader, GSPFunding {
         symbol = "GLP";
         // decimals of the shares is the same as the base token decimals
         decimals = IERC20Metadata(baseTokenAddress).decimals();
+        // initialize DOMAIN_SEPARATOR
+        buildDomainSeparator();
+        // ==========================================================================
+    }
 
-        // ============================== Permit ====================================
-        uint256 chainId;
-        assembly {
-            chainId := chainid()
-        }
-        // DOMAIN_SEPARATOR is used for approve by signature
+    // ============================== Permit ====================================
+    /**
+     * @notice DOMAIN_SEPARATOR is used for approve by signature
+     */
+    function buildDomainSeparator() public returns (bytes32){
+        string memory connect = "_";
+        string memory suffix = "GSP";
+        // name of the shares is the combination of suffix, connect and string of the GSP
+        string memory name = string(abi.encodePacked(suffix, connect, addressToShortString(address(this))));
+
         DOMAIN_SEPARATOR = keccak256(
             abi.encode(
                 // keccak256('EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'),
                 0x8b73c3c69bb8fe3d512ecc4cf759cc79239f7b179b0ffacaa9a75d522b39400f,
                 keccak256(bytes(name)),
                 keccak256(bytes("1")),
-                chainId,
+                block.chainid,
                 address(this)
             )
         );
-        // ==========================================================================
+        return DOMAIN_SEPARATOR;
     }
+
     /**
      * @notice Convert the address to a shorter string
      * @param _addr The address to convert
