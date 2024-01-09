@@ -29,7 +29,7 @@ contract GSP is GSPTrader, GSPFunding {
      * @param mtFeeRate The rate of mt fee, with 18 decimal
      * @param i The oracle price, possible to be changed only by maintainer
      * @param k The swap curve parameter
-     * @param isOpenTWAP Use TWAP price or not
+     * @param isOpenTWAP Useless, always false, keep the same interface with old version pool
      */
     function init(
         address maintainer,
@@ -64,9 +64,8 @@ contract GSP is GSPTrader, GSPFunding {
         _MT_FEE_RATE_ = mtFeeRate;
         // _MAINTAINER_ is set when initialization, the address receives the fee
         _MAINTAINER_ = maintainer;
-        _IS_OPEN_TWAP_ = isOpenTWAP;
-        // if _IS_OPEN_TWAP_ is true, _BLOCK_TIMESTAMP_LAST_ is set to the current block timestamp
-        if (isOpenTWAP) _BLOCK_TIMESTAMP_LAST_ = uint32(block.timestamp % 2**32);
+        // _IS_OPEN_TWAP_ is always false
+        _IS_OPEN_TWAP_ = false;
 
         string memory connect = "_";
         string memory suffix = "GSP";

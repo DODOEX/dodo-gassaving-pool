@@ -32,10 +32,6 @@ contract GSPStorage is ReentrancyGuard {
     // _BASE_RESERVE_ and _QUOTE_RESERVE_ are the current reserves of the GSP
     uint112 public _BASE_RESERVE_;
     uint112 public _QUOTE_RESERVE_;
-    // _BLOCK_TIMESTAMP_LAST_ is used when calculating TWAP
-    uint32 public _BLOCK_TIMESTAMP_LAST_;
-    // _BASE_PRICE_CUMULATIVE_LAST_ is used when calculating TWAP
-    uint256 public _BASE_PRICE_CUMULATIVE_LAST_;
 
     // _BASE_TARGET_ and _QUOTE_TARGET_ are recalculated when the pool state changes
     uint112 public _BASE_TARGET_;
@@ -125,12 +121,6 @@ contract GSPStorage is ReentrancyGuard {
         B0 = state.B0;
         Q0 = state.Q0;
         R = uint256(state.R);
-    }
-
-    /// @notice Return the adjusted mid price
-    /// @return midPrice The current mid price
-    function getMidPrice() public view returns (uint256 midPrice) {
-        return PMMPricing.getMidPrice(getPMMState());
     }
 
     /// @notice Return the total mt fee maintainer can claim
