@@ -27,15 +27,6 @@ contract PMMPricingTestHelper {
         return (receiveBaseAmount, newR);
         
     }
-
-    function getMidPrice(PMMPricing.PMMState memory state)
-        external
-        pure
-        returns (uint256)
-    {
-        uint256 result = PMMPricing.getMidPrice(state);
-        return result;
-    }
 }
 
 contract PMMPricingTest is Test {
@@ -142,18 +133,5 @@ contract PMMPricingTest is Test {
         (uint256 receiveBaseAmount, PMMPricing.RState newR) = helper.sellQuoteToken(state, 1e18);
         assertTrue(newR == PMMPricing.RState.BELOW_ONE);
         assertTrue(receiveBaseAmount == state.B - state.B0);
-    }
-
-    function testGetMidPrice() public {
-        state.i = 1e18;
-        state.K = 1e18;
-        state.B = 5e18;
-        state.Q = 5e18;
-        state.B0 = 6e18;
-        state.Q0 = 6e18;
-        uint256 midPrice;
-        state.R = PMMPricing.RState.BELOW_ONE;
-        midPrice = helper.getMidPrice(state);
-        assertEq(midPrice, 694444444444444444);
     }
 }

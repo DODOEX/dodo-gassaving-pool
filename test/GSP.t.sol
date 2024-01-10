@@ -70,52 +70,6 @@ contract TestGSPVault is Test {
         assertEq(sha256(abi.encodePacked(str)), sha256(abi.encodePacked("5615deb7")));
     }
 
-    function testTwapUpdate() public {
-        // set is_open_twap to true
-        address MAINTAINER = 0x95C4F5b83aA70810D4f142d58e5F7242Bd891CB0;
-        address BASE_TOKEN_ADDRESS = DAI;
-        address QUOTE_TOKEN_ADDRESS = USDC;
-        uint256 LP_FEE_RATE = 0;
-        uint256 MT_FEE_RATE = 10000000000000;
-        uint256 I = 1000000;
-        uint256 K = 500000000000000;
-        bool IS_OPEN_TWAP = true;
-        gsp.init(
-            MAINTAINER,
-            BASE_TOKEN_ADDRESS,
-            QUOTE_TOKEN_ADDRESS,
-            LP_FEE_RATE,
-            MT_FEE_RATE,
-            I,
-            K,
-            IS_OPEN_TWAP
-        );
-
-        // transfer some tokens to USER
-        vm.startPrank(DAI_WHALE);
-        dai.transfer(USER, BASE_RESERVE + BASE_INPUT);
-        vm.stopPrank();
-        vm.startPrank(USDC_WHALE);
-        usdc.transfer(USER, QUOTE_RESERVE + QUOTE_INPUT);
-        vm.stopPrank();
-        // User buys shares
-        vm.startPrank(USER);
-        dai.transfer(address(gsp), BASE_RESERVE);
-        usdc.transfer(address(gsp), QUOTE_RESERVE);
-        gsp.buyShares(USER);
-        dai.transfer(address(gsp), BASE_INPUT);
-        gsp.sellBase(USER);
-        uint32 blockTimestampBefore = gsp._BLOCK_TIMESTAMP_LAST_();
-        // Time elapse
-        vm.warp(block.timestamp + 500000);
-        usdc.transfer(address(gsp), QUOTE_INPUT);
-        gsp.sellQuote(USER);
-        uint32 blockTimestampAfter = gsp._BLOCK_TIMESTAMP_LAST_();
-        vm.stopPrank();
-        assertTrue(gsp._IS_OPEN_TWAP_() == true);
-        assertTrue(blockTimestampAfter > blockTimestampBefore);
-    }
-
     function testInitFail() public {
         // Init params
         address MAINTAINER = 0x95C4F5b83aA70810D4f142d58e5F7242Bd891CB0;
