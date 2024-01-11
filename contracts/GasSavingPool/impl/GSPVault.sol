@@ -78,20 +78,6 @@ contract GSPVault is GSPStorage {
         return _QUOTE_TOKEN_.balanceOf(address(this)) - uint256(_QUOTE_RESERVE_) - uint256(_MT_FEE_QUOTE_);
     }
 
-    // ============ TWAP UPDATE ===========
-    /**
-     * @notice Update the twap price, internal use only
-     * @dev The twap price is updated when _IS_OPEN_TWAP_ is true
-     */
-    function _twapUpdate() internal {
-        uint32 blockTimestamp = uint32(block.timestamp % 2**32);
-        uint32 timeElapsed = blockTimestamp - _BLOCK_TIMESTAMP_LAST_;
-        if (timeElapsed > 0 && _BASE_RESERVE_ != 0 && _QUOTE_RESERVE_ != 0) {
-            _BASE_PRICE_CUMULATIVE_LAST_ += getMidPrice() * timeElapsed;
-        }
-        _BLOCK_TIMESTAMP_LAST_ = blockTimestamp;
-    }
-
     // ============ Set States ============
     /**
      * @notice Set the reserves of the pool, internal use only
@@ -103,7 +89,6 @@ contract GSPVault is GSPStorage {
         require(baseReserve <= type(uint112).max && quoteReserve <= type(uint112).max, "OVERFLOW");
         _BASE_RESERVE_ = uint112(baseReserve);
         _QUOTE_RESERVE_ = uint112(quoteReserve);
-        if (_IS_OPEN_TWAP_) _twapUpdate();
     }
 
     /**
@@ -121,7 +106,6 @@ contract GSPVault is GSPStorage {
         if (quoteBalance != _QUOTE_RESERVE_) {
             _QUOTE_RESERVE_ = uint112(quoteBalance);
         }
-        if (_IS_OPEN_TWAP_) _twapUpdate();
     }
 
     /// @notice Sync the reserves of the pool
