@@ -63,6 +63,10 @@ contract GSPFunding is GSPVault {
             // The target will be updated
             _BASE_TARGET_ = uint112(shares);
             _QUOTE_TARGET_ = uint112(DecimalMath.mulFloor(shares, _I_));
+            // Lock 1001 shares permanently in first deposit 
+            require(shares > 2001, "MINT_AMOUNT_NOT_ENOUGH");
+            _mint(address(0), 1001);
+            shares -= 1001;
         } else if (baseReserve > 0 && quoteReserve > 0) {
             // case 2. normal case
             uint256 baseInputRatio = DecimalMath.divFloor(baseInput, baseReserve);

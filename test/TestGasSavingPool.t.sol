@@ -74,37 +74,43 @@ contract TestGasSavingPool is Test {
             (shares2, baseInput2, quoteInput2) = dsp.buyShares(USER);
             gsp.getPMMState();
             dsp.getPMMState();
-            assertEq(shares1, shares2, "gsp shares != dsp shares");
-            assertEq(shares1, 1e19);
+            if (i == 0) {
+                assertEq(shares1 + 1001, shares2, "gsp shares != dsp shares");
+                assertEq(shares1 + 1001, 1e19);
+                assertEq(shares2, 1e19);
+            } else {
+                assertEq(shares1, 1e19);
+                assertEq(shares2, 1e19);
+            }
             assertEq(baseInput1, baseInput2, "gsp baseInput != dsp baseInput");
             assertEq(baseInput1, 1e19);
             assertEq(quoteInput1, quoteInput2, "gsp quoteInput != dsp quoteInput");
             assertEq(quoteInput1, 1e7);
-            assertEq(gsp.balanceOf(USER), dsp.balanceOf(USER), "gsp total shares != dsp total shares");
-            uint256 totShare = i == 0 ? 1e19 : 2 * 1e19;
+            assertEq(gsp.balanceOf(USER) + 1001, dsp.balanceOf(USER), "gsp total shares != dsp total shares");
+            uint256 totShare = i == 0 ? 1e19 - 1001 : 2 * 1e19 - 1001;
             assertEq(gsp.balanceOf(USER), totShare);
         }
         // sell shares
-        (uint256 baseAmount1, uint256 quoteAmount1) = gsp.sellShares(gsp.balanceOf(USER) / 2, USER, 0, 0, "", block.timestamp);
-        (uint256 baseAmount2, uint256 quoteAmount2) = dsp.sellShares(dsp.balanceOf(USER) / 2, USER, 0, 0, "", block.timestamp);
+        (uint256 baseAmount1, uint256 quoteAmount1) = gsp.sellShares(1e19, USER, 0, 0, "", block.timestamp);
+        (uint256 baseAmount2, uint256 quoteAmount2) = dsp.sellShares(1e19, USER, 0, 0, "", block.timestamp);
         gsp.getPMMState();
         dsp.getPMMState();
         assertEq(baseAmount1, baseAmount2, "gsp baseAmount != dsp baseAmount");
         assertEq(baseAmount1, 1e19);
         assertEq(quoteAmount1, quoteAmount2, "gsp quoteAmount != dsp quoteAmount");
         assertEq(quoteAmount1, 1e7);
-        assertEq(gsp.balanceOf(USER), dsp.balanceOf(USER), "gsp total shares != dsp total shares");
-        assertEq(gsp.balanceOf(USER), 1e19);
+        assertEq(gsp.balanceOf(USER) + 1001, dsp.balanceOf(USER), "gsp total shares != dsp total shares");
+        assertEq(gsp.balanceOf(USER), 1e19 - 1001);
         // sell shares
-        (baseAmount1, quoteAmount1) = gsp.sellShares(gsp.balanceOf(USER), USER, 0, 0, "", block.timestamp);
-        (baseAmount2, quoteAmount2) = dsp.sellShares(dsp.balanceOf(USER), USER, 0, 0, "", block.timestamp);
+        (baseAmount1, quoteAmount1) = gsp.sellShares(1e19 - 1001, USER, 0, 0, "", block.timestamp);
+        (baseAmount2, quoteAmount2) = dsp.sellShares(1e19 - 1001, USER, 0, 0, "", block.timestamp);
         gsp.getPMMState();
         dsp.getPMMState();
         assertEq(baseAmount1, baseAmount2, "gsp baseAmount != dsp baseAmount");
-        assertEq(baseAmount1, 1e19);
+        assertEq(baseAmount1, 9999999999999998999);
         assertEq(quoteAmount1, quoteAmount2, "gsp quoteAmount != dsp quoteAmount");
-        assertEq(quoteAmount1, 1e7);
-        assertEq(gsp.balanceOf(USER), dsp.balanceOf(USER), "gsp total shares != dsp total shares");
+        assertEq(quoteAmount1, 9999999);
+        assertEq(gsp.balanceOf(USER) + 1001, dsp.balanceOf(USER), "gsp total shares != dsp total shares");
         assertEq(gsp.balanceOf(USER), 0);
     }
 
@@ -126,7 +132,7 @@ contract TestGasSavingPool is Test {
         dai.transfer(address(dsp), BASE_RESERVE);
         usdc.transfer(address(dsp), QUOTE_RESERVE);
         (uint256 shares2, uint256 baseInput2, uint256 quoteInput2) = dsp.buyShares(USER);
-        assertEq(shares1, shares2, "gsp shares != dsp shares");
+        assertEq(shares1 + 1001, shares2, "gsp shares != dsp shares");  
         assertEq(baseInput1, baseInput2, "gsp baseInput != dsp baseInput");
         assertEq(quoteInput1, quoteInput2, "gsp quoteInput != dsp quoteInput");
 
@@ -189,7 +195,7 @@ contract TestGasSavingPool is Test {
         dai.transfer(address(dsp), BASE_RESERVE);
         usdc.transfer(address(dsp), QUOTE_RESERVE);
         (uint256 shares2, uint256 baseInput2, uint256 quoteInput2) = dsp.buyShares(USER);
-        assertEq(shares1, shares2, "gsp shares != dsp shares");
+        assertEq(shares1 + 1001, shares2, "gsp shares != dsp shares");
         assertEq(baseInput1, baseInput2, "gsp baseInput != dsp baseInput");
         assertEq(quoteInput1, quoteInput2, "gsp quoteInput != dsp quoteInput");
 
@@ -256,7 +262,7 @@ contract TestGasSavingPool is Test {
         usdc.transfer(address(dsp), QUOTE_RESERVE);
         (uint256 shares2, uint256 baseInput2, uint256 quoteInput2) = dsp.buyShares(USER);
         vm.stopPrank();
-        assertEq(shares1, shares2, "gsp shares != dsp shares");
+        assertEq(shares1 + 1001, shares2, "gsp shares != dsp shares");
         assertEq(baseInput1, baseInput2, "gsp baseInput != dsp baseInput");
         assertEq(quoteInput1, quoteInput2, "gsp quoteInput != dsp quoteInput");
 
@@ -284,7 +290,7 @@ contract TestGasSavingPool is Test {
         // burn shares
         vm.startPrank(USER);
         (uint256 baseAmount1, uint256 quoteAmount1) = gsp.sellShares(gsp.balanceOf(USER), USER, 0, 0, "", block.timestamp);
-        (uint256 baseAmount2, uint256 quoteAmount2) = dsp.sellShares(dsp.balanceOf(USER), USER, 0, 0, "", block.timestamp);
+        (uint256 baseAmount2, uint256 quoteAmount2) = dsp.sellShares(dsp.balanceOf(USER) - 1001, USER, 0, 0, "", block.timestamp);
         vm.stopPrank();
         assertEq(baseAmount1, baseAmount2, "gsp baseAmount != dsp baseAmount");
         assertEq(quoteAmount1, quoteAmount2, "gsp quoteAmount != dsp quoteAmount");
@@ -307,7 +313,7 @@ contract TestGasSavingPool is Test {
         dai.transfer(address(dsp), BASE_RESERVE);
         usdc.transfer(address(dsp), QUOTE_RESERVE);
         (uint256 shares2, uint256 baseInput2, uint256 quoteInput2) = dsp.buyShares(USER);
-        assertEq(shares1, shares2, "gsp shares != dsp shares");
+        assertEq(shares1 + 1001, shares2, "gsp shares != dsp shares");
         assertEq(baseInput1, baseInput2, "gsp baseInput != dsp baseInput");
         assertEq(quoteInput1, quoteInput2, "gsp quoteInput != dsp quoteInput");
 
