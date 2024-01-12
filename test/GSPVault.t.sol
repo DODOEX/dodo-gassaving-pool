@@ -347,7 +347,7 @@ contract TestGSPVault is Test {
         gsp.buyShares(USER);
     }
 
-    function testSetReserveWithOverflow() public {
+    function testShouldNotBeZero() public {
         GSP gspTest = new GSP();
         gspTest.init(
             MAINTAINER,
@@ -363,8 +363,9 @@ contract TestGSPVault is Test {
         mockBaseToken.transfer(address(gspTest), 1e19);
         mockQuoteToken.transfer(address(gspTest), 1e19);
         gspTest.buyShares(USER);
-        mockBaseToken.transfer(address(gspTest), type(uint112).max);
-        vm.expectRevert("OVERFLOW");
+        // try to drain quote reserve
+        mockBaseToken.transfer(address(gspTest), 5000000000 * gspTest._BASE_RESERVE_());
+        vm.expectRevert("DODOMath: should not be 0");
         gspTest.sellBase(USER);
         vm.stopPrank();
     }
