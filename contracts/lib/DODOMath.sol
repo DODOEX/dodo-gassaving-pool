@@ -178,6 +178,9 @@ library DODOMath {
         uint256 numerator;
         if (bSig) {
             numerator = squareRoot - bAbs;
+            if (numerator == 0) {
+                revert("DODOMath: should not be 0");
+            }
         } else {
             numerator = bAbs + squareRoot;
         }
