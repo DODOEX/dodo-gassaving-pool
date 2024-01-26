@@ -63,6 +63,7 @@ contract GSPFunding is GSPVault {
             // The target will be updated
             _BASE_TARGET_ = uint112(shares);
             _QUOTE_TARGET_ = uint112(DecimalMath.mulFloor(shares, _I_));
+            require(_QUOTE_TARGET_ > 0, "QUOTE_TARGET_IS_ZERO");
             // Lock 1001 shares permanently in first deposit 
             require(shares > 2001, "MINT_AMOUNT_NOT_ENOUGH");
             _mint(address(0), 1001);
