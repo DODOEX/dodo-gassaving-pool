@@ -337,16 +337,6 @@ contract TestGSPVault is Test {
         gsp.buyShares(USER);
     }
 
-    function testBugShareNotEnough() public {
-        deal(DAI, USER, 1);
-        deal(USDC, USER, 1);
-        vm.startPrank(USER);
-        dai.transfer(address(gsp), 1);
-        usdc.transfer(address(gsp), 1);
-        vm.expectRevert("MINT_AMOUNT_NOT_ENOUGH");
-        gsp.buyShares(USER);
-    }
-
     function testShouldNotBeZero() public {
         GSP gspTest = new GSP();
         gspTest.init(
@@ -368,5 +358,16 @@ contract TestGSPVault is Test {
         vm.expectRevert("DODOMath: should not be 0");
         gspTest.sellBase(USER);
         vm.stopPrank();
+    }
+
+    function testIntialQuoteTargetCannotBeZero() external {
+        vm.startPrank(USER);
+        deal(DAI, USER, 1e5);
+        deal(USDC, USER, 1e5);
+        // transfer a small value to set Q0 = 0
+        dai.transfer(address(gsp), 1e5);
+        usdc.transfer(address(gsp), 1e5);
+        vm.expectRevert("QUOTE_TARGET_IS_ZERO");
+        gsp.buyShares(USER);
     }
 }
