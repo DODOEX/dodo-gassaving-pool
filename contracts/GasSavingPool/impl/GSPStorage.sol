@@ -79,6 +79,8 @@ contract GSPStorage is ReentrancyGuard {
     uint256 public _MT_FEE_BASE_;
     // _MT_FEE_QUOTE_ represents the mt fee in quote token
     uint256 public _MT_FEE_QUOTE_;
+    // _MT_FEE_RATE_MODEL_ is useless, just for compatible with old version pool
+    address public _MT_FEE_RATE_MODEL_ = address(0);
 
     // ============ Helper Functions ============
 

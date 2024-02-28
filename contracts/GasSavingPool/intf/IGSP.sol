@@ -25,6 +25,8 @@ interface IGSP {
 
     function _I_() external view returns (uint256);
 
+    function _MT_FEE_RATE_MODEL_() external view returns (address); // Useless, just for compatibility
+
     function getVaultReserve() external view returns (uint256 baseReserve, uint256 quoteReserve);
 
     function getUserFeeRate(address user) external view returns (uint256 lpFeeRate, uint256 mtFeeRate);
