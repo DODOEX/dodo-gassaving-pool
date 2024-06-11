@@ -17,4 +17,4 @@ jobs:
         with:
           version: nightly
           
-      - run: yarn coverage-forge
+      - run: yarn coverage
