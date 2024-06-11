@@ -2,13 +2,17 @@
 
 Main Contract: ./contracts/GasSavingPool/impl/
 
-GSP is a advanced version of DODO V2 DSP. The whole contracts of GSP uses solidity 0.8.16 version. It provides user with two methods to swap, including sellBase and sellQuote. Same as DSP, GSP supports flashloan. Compared with  of DSP and UniV3, GSP can perform swap at a cost of much lower gas fee. 
+GSP is a advanced version of DODO V2 [DSP](https://docs.dodoex.io/en/product/dodo-v2-pools/dodo-stable-pool). The whole contracts of GSP uses solidity 0.8.16 version. It provides user with two methods to swap, including sellBase and sellQuote. Same as DSP, GSP supports flashloan. Compared with  of DSP and UniV3, GSP can perform swap at a cost of much lower gas fee. 
 
 Inheritaged a template using Foundry && HardHat architecture. We use foundry test.
 
 ## Diff Report from DSP
 
 link: [https://www.diffchecker.com/Cl4eG2Xg/](https://www.diffchecker.com/Cl4eG2Xg/)
+
+## Audit Report
+
+link: [DODO_GSP_Audit_Report](https://github.com/DODOEX/dodo-gassaving-pool/blob/main/DODO_GSP_Audit_Report.pdf)
 
 ## Test
 The test of GSP implemets Foundry framework, and you can run the test using Foundry test command.
