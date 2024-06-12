@@ -24,7 +24,7 @@ contract StableSwap is Script {
 
     address constant UniV3_ROUTER = 0xE592427A0AEce92De3Edee1F18E0157C05861564;
     address constant USDC_WHALE = 0x51eDF02152EBfb338e03E30d65C15fBf06cc9ECC;
-    address constant DAI_WHALE = 0x25B313158Ce11080524DcA0fD01141EeD5f94b81;
+    address constant DAI_WHALE = 0x40ec5B33f54e0E8A33A975908C5BA1c14e5BbbDf; 
     address LP = vm.addr(1);
     
     DeployGSP deployGSP = new DeployGSP();

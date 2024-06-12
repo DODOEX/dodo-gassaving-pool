@@ -23,6 +23,7 @@ contract GSP is GSPTrader, GSPFunding {
     /**
      * @notice Function will be called in factory, init risk should not be included.
      * @param maintainer The dodo's address, who can claim mtFee and own this pool
+     * @param admin oracle owner address, who can set price.
      * @param baseTokenAddress The base token address
      * @param quoteTokenAddress The quote token address
      * @param lpFeeRate The rate of lp fee, with 18 decimal
@@ -33,6 +34,7 @@ contract GSP is GSPTrader, GSPFunding {
      */
     function init(
         address maintainer,
+        address admin,
         address baseTokenAddress,
         address quoteTokenAddress,
         uint256 lpFeeRate,
@@ -64,6 +66,7 @@ contract GSP is GSPTrader, GSPFunding {
         _MT_FEE_RATE_ = mtFeeRate;
         // _MAINTAINER_ is set when initialization, the address receives the fee
         _MAINTAINER_ = maintainer;
+        _ADMIN_ = admin;
         // _IS_OPEN_TWAP_ is always false
         _IS_OPEN_TWAP_ = false;
 
