@@ -6,8 +6,8 @@ GSP is a advanced version of DODO V2 [DSP](https://docs.dodoex.io/en/product/dod
 
 GSP add two features:
  - Admin can adjust oracle price and price limit. There are two functions:
-  - adjustPrice(): Admin adjust oracle price
-  - adjustPriceLimit(): Set price limit which limit the price change amplitude. The relative ratio of the newly set price to the old price cannot exceed this value, with the unit being 1e6. The default value is 1e3, meaning the relative price change amplitude cannot exceed 1e3/1e6 = 0.1%.
+  1. adjustPrice(): Admin adjust oracle price
+  2. adjustPriceLimit(): Set price limit which limit the price change amplitude. The relative ratio of the newly set price to the old price cannot exceed this value, with the unit being 1e6. The default value is 1e3, meaning the relative price change amplitude cannot exceed 1e3/1e6 = 0.1%.
  - Maintainer need to claim mtFee in pool
 
 Inheritaged a template using Foundry && HardHat architecture. We use foundry test.
