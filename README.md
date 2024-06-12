@@ -5,7 +5,9 @@ Main Contract: ./contracts/GasSavingPool/impl/
 GSP is a advanced version of DODO V2 [DSP](https://docs.dodoex.io/en/product/dodo-v2-pools/dodo-stable-pool). The whole contracts of GSP uses solidity 0.8.16 version. It provides user with two methods to swap, including sellBase and sellQuote. Same as DSP, GSP supports flashloan. Compared with  of DSP and UniV3, GSP can perform swap at a cost of much lower gas fee. 
 
 GSP add two features:
- - Admin can adjust oracle price and price limit.
+ - Admin can adjust oracle price and price limit. There are two functions:
+  - adjustPrice(): Admin adjust oracle price
+  - adjustPriceLimit(): Set price limit which limit the price change amplitude. The relative ratio of the newly set price to the old price cannot exceed this value, with the unit being 1e6. The default value is 1e3, meaning the relative price change amplitude cannot exceed 1e3/1e6 = 0.1%.
  - Maintainer need to claim mtFee in pool
 
 Inheritaged a template using Foundry && HardHat architecture. We use foundry test.
