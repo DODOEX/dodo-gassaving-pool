@@ -23,6 +23,12 @@ contract GSPVault is GSPStorage {
         _;
     }
 
+    /// @notice Check whether the caller is admin
+    modifier onlyAdmin() {
+        require(msg.sender == _ADMIN_, "ADMIN_ACCESS_DENIED");
+        _;
+    }
+
     // ============ Events ============
 
     event Transfer(address indexed from, address indexed to, uint256 amount);
@@ -133,17 +139,16 @@ contract GSPVault is GSPStorage {
      * @dev The default priceLimit is 1e3, the decimals of priceLimit is 1e6
      * @param priceLimit The new price limit
      */
-    function adjustPriceLimit(uint256 priceLimit) external onlyMaintainer {
+    function adjustPriceLimit(uint256 priceLimit) external onlyAdmin {
         // the default priceLimit is 1e3
         require(priceLimit <= 1e6, "INVALID_PRICE_LIMIT");
         _PRICE_LIMIT_ = priceLimit;
     }
 
     /**
-     * @notice Adjust oricle price i, only for maintainer
-     * @param i The new oracle price
+     * @notice Adjust oricle price i, only for admin
      */
-    function adjustPrice(uint256 i) external onlyMaintainer {
+    function adjustPrice(uint256 i) external onlyAdmin {
         // the difference between i and _I_ should be less than priceLimit
         uint256 offset = i > _I_ ? i - _I_ : _I_ - i;
         require((offset * 1e6 / _I_) <= _PRICE_LIMIT_, "EXCEED_PRICE_LIMIT");

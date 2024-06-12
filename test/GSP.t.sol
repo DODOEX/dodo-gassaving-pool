@@ -41,6 +41,7 @@ contract TestGSPVault is Test {
 
         gsp.init(
             MAINTAINER,
+            MAINTAINER,
             BASE_TOKEN_ADDRESS,
             QUOTE_TOKEN_ADDRESS,
             LP_FEE_RATE,
@@ -84,6 +85,7 @@ contract TestGSPVault is Test {
         vm. expectRevert("BASE_QUOTE_CAN_NOT_BE_SAME");
         gsp.init(
             MAINTAINER,
+            MAINTAINER,
             BASE_TOKEN_ADDRESS,
             BASE_TOKEN_ADDRESS,
             LP_FEE_RATE,
@@ -95,6 +97,7 @@ contract TestGSPVault is Test {
         // I is invalid
         vm. expectRevert();
         gsp.init(
+            MAINTAINER,
             MAINTAINER,
             BASE_TOKEN_ADDRESS,
             QUOTE_TOKEN_ADDRESS,
@@ -108,6 +111,7 @@ contract TestGSPVault is Test {
         vm. expectRevert();
         gsp.init(
             MAINTAINER,
+            MAINTAINER,
             BASE_TOKEN_ADDRESS,
             QUOTE_TOKEN_ADDRESS,
             LP_FEE_RATE,
@@ -120,6 +124,7 @@ contract TestGSPVault is Test {
         // Init twice
         gsp.init(
             MAINTAINER,
+            MAINTAINER,
             BASE_TOKEN_ADDRESS,
             QUOTE_TOKEN_ADDRESS,
             LP_FEE_RATE,
@@ -130,6 +135,7 @@ contract TestGSPVault is Test {
         );
         vm.expectRevert("GSP_INITIALIZED");
         gsp.init(
+            MAINTAINER,
             MAINTAINER,
             BASE_TOKEN_ADDRESS,
             QUOTE_TOKEN_ADDRESS,

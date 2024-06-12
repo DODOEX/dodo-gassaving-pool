@@ -1,9 +1,9 @@
 {
-  "name": "combination-pizza-hut-and-taco-bell",
+  "name": "dodo-gassaving-pool",
   "version": "1.0.0",
   "main": "index.js",
-  "repository": "git@cache:cachemonet0x0CF6619/houndry.git",
-  "author": "cachemonet0x0CF6619 <90769841+cachemonet0x0CF6619@users.noreply.github.com>",
+  "repository": "git@github.com:DODOEX/dodo-gassaving-pool.git",
+  "author": "dodo",
   "license": "MIT",
   "scripts": {
     "lint": "solhint 'src/**/*.sol'",

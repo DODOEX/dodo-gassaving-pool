@@ -47,6 +47,7 @@ contract TestGSPTrader is Test {
         GSP gspTest = new GSP();
         gspTest.init(
             MAINTAINER,
+            MAINTAINER,
             address(mockBaseToken),
             address(mockQuoteToken),
             0,

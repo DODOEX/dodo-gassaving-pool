@@ -25,6 +25,7 @@ contract TestGSPVault is Test {
 
     // Init Params
     address constant MAINTAINER = 0x95C4F5b83aA70810D4f142d58e5F7242Bd891CB0;
+    address constant ADMIN = address(1);
     uint256 constant LP_FEE_RATE = 0;
     uint256 constant MT_FEE_RATE = 10000000000000;
     uint256 constant I = 1000000;
@@ -38,7 +39,7 @@ contract TestGSPVault is Test {
     function setUp() public {
         // Deploy and Init 
         DeployGSP deployGSP = new DeployGSP();
-        gsp = deployGSP.run();
+        gsp = deployGSP.runAdminDiff();
 
         // Deploy ERC20 Mock
         mockBaseToken = new MockERC20("mockBaseToken", "mockBaseToken", 18);
@@ -60,7 +61,7 @@ contract TestGSPVault is Test {
     }
 
     function testOnlyMaintainerCanAdjustParams() public {
-        vm.startPrank(MAINTAINER);
+        vm.startPrank(ADMIN);
         // adjust price limit
         gsp.adjustPriceLimit(1e4);
         assertEq(gsp._PRICE_LIMIT_(), 1e4);
@@ -71,10 +72,12 @@ contract TestGSPVault is Test {
         gsp.adjustPrice((1e6 + 1e4));
         uint256 priceAfter = gsp._I_();
         assertTrue(priceAfter == (1e6 + 1e4));
+        vm.stopPrank();
        
        // adjust mtfee rate
         uint256 mtFeeRateBefore = gsp._MT_FEE_RATE_();
         assertTrue(mtFeeRateBefore == MT_FEE_RATE);
+        vm.prank(MAINTAINER);
         gsp.adjustMtFeeRate(2e13);
         uint256 mtFeeRateAfter = gsp._MT_FEE_RATE_();
         assertTrue(mtFeeRateAfter == 2e13);
@@ -83,6 +86,7 @@ contract TestGSPVault is Test {
     function testSyncSucceed() public {
         GSP gspTest = new GSP();
         gspTest.init(
+            MAINTAINER,
             MAINTAINER,
             address(mockBaseToken),
             address(mockQuoteToken),
@@ -105,6 +109,7 @@ contract TestGSPVault is Test {
     function testSyncOverflow() public {
         GSP gspTest = new GSP();
         gspTest.init(
+            MAINTAINER,
             MAINTAINER,
             address(mockBaseToken),
             address(mockQuoteToken),
@@ -277,13 +282,13 @@ contract TestGSPVault is Test {
 
 
     function testAdjustPriceLimitIsInvalid() public{
-        vm.startPrank(MAINTAINER);
+        vm.startPrank(ADMIN);
         vm.expectRevert("INVALID_PRICE_LIMIT");
         gsp.adjustPriceLimit(1e7);
     }
     
     function testAdjustPriceExceedPriceLimit() public{
-        vm.startPrank(MAINTAINER);
+        vm.startPrank(ADMIN);
         vm.expectRevert("EXCEED_PRICE_LIMIT");
         gsp.adjustPrice((2e6));
     }
@@ -340,6 +345,7 @@ contract TestGSPVault is Test {
     function testShouldNotBeZero() public {
         GSP gspTest = new GSP();
         gspTest.init(
+            MAINTAINER,
             MAINTAINER,
             address(mockBaseToken),
             address(mockQuoteToken),

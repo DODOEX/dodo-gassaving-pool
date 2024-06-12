@@ -17,6 +17,7 @@ contract DeployGSP is Script {
 
     // Init params
     address constant MAINTAINER = 0x95C4F5b83aA70810D4f142d58e5F7242Bd891CB0;
+    address constant ADMIN = address(1); // todo change
     address constant BASE_TOKEN_ADDRESS = DAI;
     address constant QUOTE_TOKEN_ADDRESS = USDC;
     uint256 constant LP_FEE_RATE = 0;
@@ -32,6 +33,7 @@ contract DeployGSP is Script {
         // init GSP
         gsp.init(
             MAINTAINER,
+            MAINTAINER,
             BASE_TOKEN_ADDRESS,
             QUOTE_TOKEN_ADDRESS,
             LP_FEE_RATE,
@@ -43,6 +45,27 @@ contract DeployGSP is Script {
 
         return gsp;
     }
+
+    function runAdminDiff() public returns (GSP){
+        // Deploy GSP
+        gsp = new GSP();
+
+        // init GSP
+        gsp.init(
+            MAINTAINER,
+            ADMIN,
+            BASE_TOKEN_ADDRESS,
+            QUOTE_TOKEN_ADDRESS,
+            LP_FEE_RATE,
+            MT_FEE_RATE,
+            I,
+            K,
+            IS_OPEN_TWAP
+        );
+
+        return gsp;
+    }
+
 
     function testSuccess() public {}
 }

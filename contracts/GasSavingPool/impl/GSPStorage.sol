@@ -26,6 +26,8 @@ contract GSPStorage is ReentrancyGuard {
     // ============ Core Address ============
     // _MAINTAINER_ is the maintainer of GSP
     address public _MAINTAINER_;
+    // _ADMIN_ can set price
+    address public _ADMIN_;
     // _BASE_TOKEN_ and _QUOTE_TOKEN_ should be ERC20 token
     IERC20 public _BASE_TOKEN_;
     IERC20 public _QUOTE_TOKEN_;
