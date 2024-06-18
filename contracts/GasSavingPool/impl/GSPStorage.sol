@@ -73,6 +73,7 @@ contract GSPStorage is ReentrancyGuard {
     uint256 public _LP_FEE_RATE_;
     uint256 public _K_;
     uint256 public _I_;
+    address public _O_;
     // _PRICE_LIMIT_ is 1/1000 by default, which is used to limit the setting range of I
     uint256 public _PRICE_LIMIT_ = 1e3;
 
