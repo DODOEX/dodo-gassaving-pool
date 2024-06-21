@@ -16,10 +16,9 @@ interface ISftWrappedToken {
 contract SolvOracleAdapter is IOracle {
     ISftWrappedToken public sftWrappedToken;
 
-    function prices(address base) external override returns (uint256 price) {
+    function prices(address base) external view override returns (uint256 price) {
         uint256 shares = 1e18;
-        sftWrappedToken = ISftWrappedToken(base);
-        uint256 value = sftWrappedToken.getValueByShares(shares);
+        uint256 value = ISftWrappedToken(base).getValueByShares(shares);
         price = value / 1;
     }
 }

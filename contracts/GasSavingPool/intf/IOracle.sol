@@ -8,5 +8,5 @@
 pragma solidity 0.8.16;
 
 interface IOracle {
-    function prices(address base) external returns (uint256);
+    function prices(address base) external view returns (uint256);
 }
