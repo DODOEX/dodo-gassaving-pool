@@ -6,11 +6,13 @@ import "../lib/forge-std/src/Script.sol";
 import "../lib/forge-std/src/console.sol";
 
 import {GSP} from "../contracts/GasSavingPool/impl/GSP.sol";
+import {OracleMock} from "../test/mock/OracleMock.sol";
 
 
 contract DeployGSP is Script {
 
     GSP public gsp;
+    OracleMock public oracle;
 
     address constant DAI = 0x6B175474E89094C44Da98b954EedeAC495271d0F;
     address constant USDC = 0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48;
@@ -29,6 +31,7 @@ contract DeployGSP is Script {
     function run() public returns (GSP){
         // Deploy GSP
         gsp = new GSP();
+        oracle = new OracleMock();
 
         // init GSP
         gsp.init(
@@ -38,8 +41,8 @@ contract DeployGSP is Script {
             QUOTE_TOKEN_ADDRESS,
             LP_FEE_RATE,
             MT_FEE_RATE,
-            I,
             K,
+            address(oracle),
             IS_OPEN_TWAP
         );
 
@@ -58,8 +61,8 @@ contract DeployGSP is Script {
             QUOTE_TOKEN_ADDRESS,
             LP_FEE_RATE,
             MT_FEE_RATE,
-            I,
             K,
+            address(oracle),
             IS_OPEN_TWAP
         );
 

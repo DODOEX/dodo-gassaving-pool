@@ -12,6 +12,7 @@ import {DecimalMath} from "../../lib/DecimalMath.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {PMMPricing} from "../../lib/PMMPricing.sol";
+import {IOracle} from "../intf/IOracle.sol";
 
 /// @notice this contract is used for store state and read state
 contract GSPStorage is ReentrancyGuard {
@@ -73,6 +74,7 @@ contract GSPStorage is ReentrancyGuard {
     uint256 public _LP_FEE_RATE_;
     uint256 public _K_;
     uint256 public _I_;
+    address public _O_;
     // _PRICE_LIMIT_ is 1/1000 by default, which is used to limit the setting range of I
     uint256 public _PRICE_LIMIT_ = 1e3;
 
@@ -90,7 +92,7 @@ contract GSPStorage is ReentrancyGuard {
     /// @dev B0 and Q0 are calculated in adjustedTarget
     /// @return state The current PMM state
     function getPMMState() public view returns (PMMPricing.PMMState memory state) {
-        state.i = _I_;
+        state.i = IOracle(_O_).prices(address(_BASE_TOKEN_));
         state.K = _K_;
         state.B = _BASE_RESERVE_;
         state.Q = _QUOTE_RESERVE_;

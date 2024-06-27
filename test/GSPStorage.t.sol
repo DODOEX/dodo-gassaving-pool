@@ -11,7 +11,7 @@ contract TestGSPStorage is Test {
     GSP gsp;
 
     // Init Params
-    uint256 constant i = 1000000;
+    uint256 constant i = 1e18;
     uint256 constant k = 500000000000000;
 
 
