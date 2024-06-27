@@ -9,11 +9,13 @@ import {GSP} from "../contracts/GasSavingPool/impl/GSP.sol";
 import {PMMPricing} from "../contracts/lib/PMMPricing.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {MockERC20} from "mock/MockERC20.sol";
+import {OracleMock} from "./mock/OracleMock.sol";
 
 contract TestGSPTrader is Test {
     GSP gsp;
     MockERC20 mockBaseToken;
     MockERC20 mockQuoteToken;
+    OracleMock oracle;
 
     // Test Params
     address USER = vm.addr(1);
@@ -41,6 +43,10 @@ contract TestGSPTrader is Test {
         mockBaseToken.mint(USER, type(uint256).max);
         mockQuoteToken = new MockERC20("mockQuoteToken", "mockQuoteToken", 18);
         mockQuoteToken.mint(USER, type(uint256).max);
+
+        // Deploy Oracle Mock
+        oracle = new OracleMock();
+        oracle.setPrice(1000000);
     }
 
     function testUpdateTargetOverflow() public {
@@ -52,8 +58,8 @@ contract TestGSPTrader is Test {
             address(mockQuoteToken),
             0,
             0,
-            1000000,
             500000000000000,
+            address(oracle),
             false
         );
         vm.startPrank(USER);
