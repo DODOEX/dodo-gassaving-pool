@@ -92,6 +92,7 @@ contract GSP is GSPTrader, GSPFunding {
     function changeOracle(address newOracle) public onlyAdmin {
         require(newOracle !=  address(0), "INVALID_ORACLE");
         _O_ = newOracle;
+        _I_ = IOracle(_O_).prices(address(_BASE_TOKEN_));
         emit ChangeOracle(newOracle);
     }
 

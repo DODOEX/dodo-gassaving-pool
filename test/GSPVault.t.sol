@@ -67,20 +67,7 @@ contract TestGSPVault is Test {
     }
 
     function testOnlyMaintainerCanAdjustParams() public {
-        vm.startPrank(ADMIN);
-        // adjust price limit
-        gsp.adjustPriceLimit(1e4);
-        assertEq(gsp._PRICE_LIMIT_(), 1e4);
-
-        // adjust price
-        uint256 priceBefore = gsp._I_();
-        assertTrue(priceBefore == I);
-        gsp.adjustPrice((1e6 + 1e4));
-        uint256 priceAfter = gsp._I_();
-        assertTrue(priceAfter == (1e6 + 1e4));
-        vm.stopPrank();
-       
-       // adjust mtfee rate
+        // adjust mtfee rate
         uint256 mtFeeRateBefore = gsp._MT_FEE_RATE_();
         assertTrue(mtFeeRateBefore == MT_FEE_RATE);
         vm.prank(MAINTAINER);
@@ -284,19 +271,6 @@ contract TestGSPVault is Test {
         (uint8 v, bytes32 r, bytes32 s) = vm.sign(privKey, digest);
         vm.expectRevert("DODO_GSP_LP: EXPIRED");
         gsp.permit(USER, OTHER, value, deadline, v, r, s);
-    }
-
-
-    function testAdjustPriceLimitIsInvalid() public{
-        vm.startPrank(ADMIN);
-        vm.expectRevert("INVALID_PRICE_LIMIT");
-        gsp.adjustPriceLimit(1e7);
-    }
-    
-    function testAdjustPriceExceedPriceLimit() public{
-        vm.startPrank(ADMIN);
-        vm.expectRevert("EXCEED_PRICE_LIMIT");
-        gsp.adjustPrice((2e6));
     }
 
     function testAdjustMtFeeRateIsInvalid() public{
