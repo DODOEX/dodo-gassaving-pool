@@ -140,30 +140,6 @@ contract GSPVault is GSPStorage {
     }
 
     /**
-     * @notice PriceLimit is used for oracle change protection
-     * @notice It sets a ratio where the relative deviation between the new price and the old price cannot exceed this ratio.
-     * @dev The default priceLimit is 1e3, the decimals of priceLimit is 1e6
-     * @param priceLimit The new price limit
-     */
-    function adjustPriceLimit(uint256 priceLimit) external onlyAdmin {
-        // the default priceLimit is 1e3
-        require(priceLimit <= 1e6, "INVALID_PRICE_LIMIT");
-        _PRICE_LIMIT_ = priceLimit;
-    }
-
-    /**
-     * @notice Adjust oricle price i, only for admin
-     */
-    function adjustPrice(uint256 i) external onlyAdmin {
-        // the difference between i and _I_ should be less than priceLimit
-        uint256 offset = i > _I_ ? i - _I_ : _I_ - i;
-        require((offset * 1e6 / _I_) <= _PRICE_LIMIT_, "EXCEED_PRICE_LIMIT");
-        _I_ = i;
-        
-        emit IChange(i);
-    }
-
-    /**
      * @notice Adjust mtFee rate, only for maintainer
      * @dev The decimals of mtFee rate is 1e18
      * @param mtFeeRate The new mtFee rate
