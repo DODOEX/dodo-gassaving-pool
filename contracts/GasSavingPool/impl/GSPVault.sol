@@ -39,6 +39,12 @@ contract GSPVault is GSPStorage {
 
     event Burn(address indexed user, uint256 value);
 
+    event MtFeeRateChange(uint256 newMtFee);
+
+    event IChange(uint256 newI);
+
+    event WithdrawMtFee(address indexed token, uint256 amount);
+
     // ============ View Functions ============
     /**
      * @notice Get the reserves of the pool
@@ -153,6 +159,8 @@ contract GSPVault is GSPStorage {
         uint256 offset = i > _I_ ? i - _I_ : _I_ - i;
         require((offset * 1e6 / _I_) <= _PRICE_LIMIT_, "EXCEED_PRICE_LIMIT");
         _I_ = i;
+        
+        emit IChange(i);
     }
 
     /**
@@ -163,6 +171,8 @@ contract GSPVault is GSPStorage {
     function adjustMtFeeRate(uint256 mtFeeRate) external onlyMaintainer {
         require(mtFeeRate <= 10**18, "INVALID_MT_FEE_RATE");
         _MT_FEE_RATE_ = mtFeeRate;
+
+        emit MtFeeRateChange(mtFeeRate);
     }
 
     // ============ Asset Out ============
@@ -196,6 +206,9 @@ contract GSPVault is GSPStorage {
         _transferQuoteOut(_MAINTAINER_, mtFeeQuote);
         _MT_FEE_BASE_ = 0;
         _transferBaseOut(_MAINTAINER_, mtFeeBase);
+
+        emit WithdrawMtFee(_QUOTE_TOKEN_, mtFeeQuote);
+        emit WithdrawMtFee(_BASE_TOKEN_, mtFeeBase);
     }
 
     // ============ Shares (ERC20) ============
