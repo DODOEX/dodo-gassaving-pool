@@ -96,6 +96,10 @@ contract GSP is GSPTrader, GSPFunding {
         emit ChangeOracle(newOracle);
     }
 
+    function changeAdmin(address newAdmin) public onlyAdmin {
+        _ADMIN_ = newAdmin;
+    }
+
     // ============================== Permit ====================================
     /**
      * @notice DOMAIN_SEPARATOR is used for approve by signature
