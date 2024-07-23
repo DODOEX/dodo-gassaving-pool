@@ -6,9 +6,11 @@ pragma abicoder v2;
 import {Test, console} from "forge-std/Test.sol";
 import {GSP} from "../contracts/GasSavingPool/impl/GSP.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import {OracleMock} from "./mock/OracleMock.sol";
 
-contract TestGSPVault is Test {
+contract TestGSP is Test {
     GSP gsp;
+    OracleMock oracle;
 
     // Test Params
     address USER = vm.addr(1);
@@ -26,6 +28,10 @@ contract TestGSPVault is Test {
 
     function setUp() public {
         gsp = new GSP();
+
+        // Deploy Oracle Mock
+        oracle = new OracleMock();
+        oracle.setPrice(1000000);
     }
 
     function testInit() public {
@@ -46,8 +52,8 @@ contract TestGSPVault is Test {
             QUOTE_TOKEN_ADDRESS,
             LP_FEE_RATE,
             MT_FEE_RATE,
-            I,
             K,
+            address(oracle),
             IS_OPEN_TWAP
         );
 
@@ -90,24 +96,12 @@ contract TestGSPVault is Test {
             BASE_TOKEN_ADDRESS,
             LP_FEE_RATE,
             MT_FEE_RATE,
-            I,
             K,
-            IS_OPEN_TWAP
-        );
-        // I is invalid
-        vm. expectRevert();
-        gsp.init(
-            MAINTAINER,
-            MAINTAINER,
-            BASE_TOKEN_ADDRESS,
-            QUOTE_TOKEN_ADDRESS,
-            LP_FEE_RATE,
-            MT_FEE_RATE,
-            2 * I,
-            K,
+            address(oracle),
             IS_OPEN_TWAP
         );
         // K is invalid
+        oracle.setPrice(I);
         vm. expectRevert();
         gsp.init(
             MAINTAINER,
@@ -116,8 +110,8 @@ contract TestGSPVault is Test {
             QUOTE_TOKEN_ADDRESS,
             LP_FEE_RATE,
             MT_FEE_RATE,
-            I,
             2 * K,
+            address(oracle),
             IS_OPEN_TWAP
         );
 
@@ -129,8 +123,8 @@ contract TestGSPVault is Test {
             QUOTE_TOKEN_ADDRESS,
             LP_FEE_RATE,
             MT_FEE_RATE,
-            I,
             K,
+            address(oracle),
             IS_OPEN_TWAP
         );
         vm.expectRevert("GSP_INITIALIZED");
@@ -141,8 +135,8 @@ contract TestGSPVault is Test {
             QUOTE_TOKEN_ADDRESS,
             LP_FEE_RATE,
             MT_FEE_RATE,
-            I,
             K,
+            address(oracle),
             IS_OPEN_TWAP
         );
     }
