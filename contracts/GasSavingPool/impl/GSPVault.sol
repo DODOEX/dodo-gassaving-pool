@@ -207,8 +207,8 @@ contract GSPVault is GSPStorage {
         _MT_FEE_BASE_ = 0;
         _transferBaseOut(_MAINTAINER_, mtFeeBase);
 
-        emit WithdrawMtFee(_QUOTE_TOKEN_, mtFeeQuote);
-        emit WithdrawMtFee(_BASE_TOKEN_, mtFeeBase);
+        emit WithdrawMtFee(address(_QUOTE_TOKEN_), mtFeeQuote);
+        emit WithdrawMtFee(address(_BASE_TOKEN_), mtFeeBase);
     }
 
     // ============ Shares (ERC20) ============
