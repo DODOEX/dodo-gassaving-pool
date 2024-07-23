@@ -13,3 +13,9 @@ test = 'test'
 cache_path  = 'cache-foundry'
 
 # See more config options https://github.com/gakonst/foundry/tree/master/config
+
+[rpc_endpoints]
+bsc = "${BSC_RPC_URL}"
+
+[etherscan]
+bsc = { key = "${BSC_API_KEY}" }
