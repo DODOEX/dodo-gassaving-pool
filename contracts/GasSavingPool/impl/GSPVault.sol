@@ -41,8 +41,6 @@ contract GSPVault is GSPStorage {
 
     event MtFeeRateChange(uint256 newMtFee);
 
-    event IChange(uint256 newI);
-
     event WithdrawMtFee(address indexed token, uint256 amount);
 
     // ============ View Functions ============
