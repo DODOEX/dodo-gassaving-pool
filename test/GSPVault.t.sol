@@ -8,11 +8,13 @@ import {DeployGSP} from "../scripts/DeployGSP.s.sol";
 import {GSP} from "../contracts/GasSavingPool/impl/GSP.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import {MockERC20} from "mock/MockERC20.sol";
+import {OracleMock} from "./mock/OracleMock.sol";
 
 contract TestGSPVault is Test {
     GSP gsp;
     MockERC20 mockBaseToken;
     MockERC20 mockQuoteToken;
+    OracleMock oracle;
 
     address USER = vm.addr(1);
     address OTHER = vm.addr(2);
@@ -46,6 +48,10 @@ contract TestGSPVault is Test {
         mockBaseToken.mint(USER, type(uint256).max);
         mockQuoteToken = new MockERC20("mockQuoteToken", "mockQuoteToken", 18);
         mockQuoteToken.mint(USER, type(uint256).max);
+
+        // Deploy Oracle Mock
+        oracle = new OracleMock();
+        oracle.setPrice(I);
     }
 
     function testGetVaultReserve() public {
@@ -61,20 +67,7 @@ contract TestGSPVault is Test {
     }
 
     function testOnlyMaintainerCanAdjustParams() public {
-        vm.startPrank(ADMIN);
-        // adjust price limit
-        gsp.adjustPriceLimit(1e4);
-        assertEq(gsp._PRICE_LIMIT_(), 1e4);
-
-        // adjust price
-        uint256 priceBefore = gsp._I_();
-        assertTrue(priceBefore == I);
-        gsp.adjustPrice((1e6 + 1e4));
-        uint256 priceAfter = gsp._I_();
-        assertTrue(priceAfter == (1e6 + 1e4));
-        vm.stopPrank();
-       
-       // adjust mtfee rate
+        // adjust mtfee rate
         uint256 mtFeeRateBefore = gsp._MT_FEE_RATE_();
         assertTrue(mtFeeRateBefore == MT_FEE_RATE);
         vm.prank(MAINTAINER);
@@ -92,8 +85,8 @@ contract TestGSPVault is Test {
             address(mockQuoteToken),
             0,
             0,
-            1000000,
             500000000000000,
+            address(oracle),
             true
         );
         (uint256 baseReserve, uint256 quoteReserve) = gspTest.getVaultReserve();
@@ -115,8 +108,8 @@ contract TestGSPVault is Test {
             address(mockQuoteToken),
             0,
             0,
-            1000000,
             500000000000000,
+            address(oracle),
             true
         );
         vm.startPrank(USER);
@@ -280,19 +273,6 @@ contract TestGSPVault is Test {
         gsp.permit(USER, OTHER, value, deadline, v, r, s);
     }
 
-
-    function testAdjustPriceLimitIsInvalid() public{
-        vm.startPrank(ADMIN);
-        vm.expectRevert("INVALID_PRICE_LIMIT");
-        gsp.adjustPriceLimit(1e7);
-    }
-    
-    function testAdjustPriceExceedPriceLimit() public{
-        vm.startPrank(ADMIN);
-        vm.expectRevert("EXCEED_PRICE_LIMIT");
-        gsp.adjustPrice((2e6));
-    }
-
     function testAdjustMtFeeRateIsInvalid() public{
         vm.startPrank(MAINTAINER);
         vm.expectRevert("INVALID_MT_FEE_RATE");
@@ -351,8 +331,8 @@ contract TestGSPVault is Test {
             address(mockQuoteToken),
             0,
             0,
-            1000000,
             500000000000000,
+            address(oracle),
             false
         );
         vm.startPrank(USER);

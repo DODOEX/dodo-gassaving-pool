@@ -12,6 +12,7 @@ import {IERC20Metadata} from "@openzeppelin/contracts/token/ERC20/extensions/IER
 import {GSPTrader} from "./GSPTrader.sol";
 import {GSPFunding} from "./GSPFunding.sol";
 import {GSPVault} from "./GSPVault.sol";
+import {IOracle} from "../intf/IOracle.sol";
 
 /**
  * @title DODO GasSavingPool
@@ -20,6 +21,10 @@ import {GSPVault} from "./GSPVault.sol";
  * @notice DODO GasSavingPool initialization
  */
 contract GSP is GSPTrader, GSPFunding {
+
+    // ============ Events ============
+    event ChangeOracle(address newOracle);
+
     /**
      * @notice Function will be called in factory, init risk should not be included.
      * @param maintainer The dodo's address, who can claim mtFee and own this pool
@@ -28,8 +33,8 @@ contract GSP is GSPTrader, GSPFunding {
      * @param quoteTokenAddress The quote token address
      * @param lpFeeRate The rate of lp fee, with 18 decimal
      * @param mtFeeRate The rate of mt fee, with 18 decimal
-     * @param i The oracle price, possible to be changed only by maintainer
      * @param k The swap curve parameter
+     * @param o The oracle address
      * @param isOpenTWAP Useless, always false, just for compatible with old version pool
      */
     function init(
@@ -39,8 +44,8 @@ contract GSP is GSPTrader, GSPFunding {
         address quoteTokenAddress,
         uint256 lpFeeRate,
         uint256 mtFeeRate,
-        uint256 i,
         uint256 k,
+        address o,
         bool isOpenTWAP
     ) external {
         // GSP can only be initialized once
@@ -53,9 +58,9 @@ contract GSP is GSPTrader, GSPFunding {
         _BASE_TOKEN_ = IERC20(baseTokenAddress);
         _QUOTE_TOKEN_ = IERC20(quoteTokenAddress);
 
-        // i should be greater than 0 and less than 10**36
-        require(i > 0 && i <= 10**36);
-        _I_ = i;
+        _O_ = o;
+        _I_ = IOracle(_O_).prices(baseTokenAddress);
+
         // k should be greater than 0 and less than 10**18
         require(k <= 10**18);
         _K_ = k;
@@ -82,6 +87,17 @@ contract GSP is GSPTrader, GSPFunding {
         // initialize DOMAIN_SEPARATOR
         buildDomainSeparator();
         // ==========================================================================
+    }
+
+    function changeOracle(address newOracle) public onlyAdmin {
+        require(newOracle !=  address(0), "INVALID_ORACLE");
+        _O_ = newOracle;
+        _I_ = IOracle(_O_).prices(address(_BASE_TOKEN_));
+        emit ChangeOracle(newOracle);
+    }
+
+    function changeAdmin(address newAdmin) public onlyAdmin {
+        _ADMIN_ = newAdmin;
     }
 
     // ============================== Permit ====================================
