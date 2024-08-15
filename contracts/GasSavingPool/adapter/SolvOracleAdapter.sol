@@ -11,11 +11,7 @@ interface IOracle {
 
 interface ISftWrappedToken {
     function getValueByShares(uint256 shares) external view returns (uint256 value);
-    function underlyingAsset() external view returns (address);
-}
-
-interface IERC20 {
-    function decimals() external view returns(uint8);
+    function getOracleDecimals() external view returns (uint8);
 }
 
 contract SolvOracleAdapter is IOracle {
@@ -31,8 +27,7 @@ contract SolvOracleAdapter is IOracle {
     }
 
     function getDecimalCorrect(address base) public view returns (uint256 decimalCorrect, bool multiplyOrNot) {
-        address underlyingAsset = ISftWrappedToken(base).underlyingAsset();
-        uint256 decimals = IERC20(underlyingAsset).decimals();
+        uint256 decimals = uint256(ISftWrappedToken(base).getOracleDecimals());
 
         if(18 > decimals) {
             decimalCorrect = 18 - decimals;
@@ -44,10 +39,5 @@ contract SolvOracleAdapter is IOracle {
             decimalCorrect = decimals - 18;
             multiplyOrNot = false;
         }
-    }
-
-    function getUnderlyingAsset(address base) public view returns(address asset, uint256 dec) {
-        asset = ISftWrappedToken(base).underlyingAsset();
-        dec = IERC20(asset).decimals();
     }
 }
