@@ -8,6 +8,7 @@ import 'hardhat-gas-reporter';
 import 'solidity-coverage';
 import { HardhatUserConfig, subtask } from 'hardhat/config';
 import { TASK_COMPILE_SOLIDITY_GET_SOURCE_PATHS } from 'hardhat/builtin-tasks/task-names';
+import { version } from 'os';
 
 // default values here to avoid failures when running hardhat
 const RINKEBY_RPC = process.env.RINKEBY_RPC || '1'.repeat(32);
@@ -51,13 +52,26 @@ const config: HardhatUserConfig = {
     }
   },
   solidity: {
-    version: foundry.default?.solc || SOLC_DEFAULT,
-    settings: {
-      optimizer: {
-        enabled: foundry.default?.optimizer || true,
-        runs: foundry.default?.optimizer_runs || 200,
+    compilers: [
+      {
+        version: foundry.default?.solc || SOLC_DEFAULT,
+        settings: {
+          optimizer: {
+            enabled: foundry.default?.optimizer || true,
+            runs: foundry.default?.optimizer_runs || 200,
+          },
+        },
       },
-    },
+      {
+        version: '0.8.19',
+        settings: {
+          optimizer: {
+            enabled: true,
+            runs: 200,
+          },
+        },
+      }
+    ],
   },
   gasReporter: {
     currency: 'USD',

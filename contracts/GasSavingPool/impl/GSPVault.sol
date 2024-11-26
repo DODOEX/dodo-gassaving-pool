@@ -41,7 +41,11 @@ contract GSPVault is GSPStorage {
 
     event MtFeeRateChange(uint256 newMtFee);
 
+    event LpFeeRateChange(uint256 newLpFee);
+
     event IChange(uint256 newI);
+
+    event KChange(uint256 newK);
 
     event WithdrawMtFee(address indexed token, uint256 amount);
 
@@ -98,7 +102,7 @@ contract GSPVault is GSPStorage {
      */
     function _setReserve(uint256 baseReserve, uint256 quoteReserve) internal {
         // the reserves should be less than the max uint112
-        require(baseReserve <= type(uint112).max && quoteReserve <= type(uint112).max, "OVERFLOW");
+        if (baseReserve > type(uint112).max || quoteReserve > type(uint112).max) revert OVERFLOW();
         _BASE_RESERVE_ = uint112(baseReserve);
         _QUOTE_RESERVE_ = uint112(quoteReserve);
     }
@@ -111,7 +115,7 @@ contract GSPVault is GSPStorage {
         uint256 baseBalance = _BASE_TOKEN_.balanceOf(address(this)) - uint256(_MT_FEE_BASE_);
         uint256 quoteBalance = _QUOTE_TOKEN_.balanceOf(address(this)) - uint256(_MT_FEE_QUOTE_);
         // the reserves should be less than the max uint112
-        require(baseBalance <= type(uint112).max && quoteBalance <= type(uint112).max, "OVERFLOW");
+        if (baseBalance > type(uint112).max || quoteBalance > type(uint112).max) revert OVERFLOW();
         if (baseBalance != _BASE_RESERVE_) {
             _BASE_RESERVE_ = uint112(baseBalance);
         }
@@ -147,17 +151,18 @@ contract GSPVault is GSPStorage {
      */
     function adjustPriceLimit(uint256 priceLimit) external onlyAdmin {
         // the default priceLimit is 1e3
-        require(priceLimit <= 1e6, "INVALID_PRICE_LIMIT");
+        if (priceLimit > 1e6) revert INVALID_PRICE_LIMIT();
         _PRICE_LIMIT_ = priceLimit;
     }
 
     /**
      * @notice Adjust oricle price i, only for admin
      */
-    function adjustPrice(uint256 i) external onlyAdmin {
+    function adjustPrice(uint256 i) external {
+        if (msg.sender != _ADMIN_ && msg.sender != _DATA_STREAMS_CONSUMER_) revert ACCESS_DENIED();
         // the difference between i and _I_ should be less than priceLimit
         uint256 offset = i > _I_ ? i - _I_ : _I_ - i;
-        require((offset * 1e6 / _I_) <= _PRICE_LIMIT_, "EXCEED_PRICE_LIMIT");
+        if ((offset * 1e6 / _I_) > _PRICE_LIMIT_) revert EXCEED_PRICE_LIMIT();
         _I_ = i;
         
         emit IChange(i);
@@ -169,10 +174,34 @@ contract GSPVault is GSPStorage {
      * @param mtFeeRate The new mtFee rate
      */
     function adjustMtFeeRate(uint256 mtFeeRate) external onlyMaintainer {
-        require(mtFeeRate <= 10**18, "INVALID_MT_FEE_RATE");
+        if (mtFeeRate > 1e18) revert INVALID_MT_FEE_RATE();
         _MT_FEE_RATE_ = mtFeeRate;
 
         emit MtFeeRateChange(mtFeeRate);
+    }
+
+    /**
+     * @notice Adjust lpFee rate, only for maintainer
+     * @dev The decimals of lpFee rate is 1e18
+     * @param lpFeeRate The new lpFee rate
+     */
+    function adjustLpFeeRate(uint256 lpFeeRate) external onlyMaintainer {
+        if (lpFeeRate > 1e18) revert INVALID_LP_FEE_RATE();
+        _LP_FEE_RATE_ = lpFeeRate;
+
+        emit LpFeeRateChange(lpFeeRate);
+    }
+
+    /**
+     * @notice Adjust swap curve parameter k, only for maintainer
+     * @dev The decimals of k is 1e18
+     * @param k The new swap curve parameter k
+     */
+    function adjustK(uint256 k) external onlyMaintainer {
+        if (k > 1e18) revert INVALID_K();
+        _K_ = k;
+
+        emit KChange(k);
     }
 
     // ============ Asset Out ============
@@ -219,7 +248,7 @@ contract GSPVault is GSPStorage {
      * @param amount The amount to be transferred.
      */
     function transfer(address to, uint256 amount) public returns (bool) {
-        require(amount <= _SHARES_[msg.sender], "BALANCE_NOT_ENOUGH");
+        if (amount > _SHARES_[msg.sender]) revert BALANCE_NOT_ENOUGH();
 
         _SHARES_[msg.sender] = _SHARES_[msg.sender] - (amount);
         _SHARES_[to] = _SHARES_[to] + amount;
@@ -247,8 +276,8 @@ contract GSPVault is GSPStorage {
         address to,
         uint256 amount
     ) public returns (bool) {
-        require(amount <= _SHARES_[from], "BALANCE_NOT_ENOUGH");
-        require(amount <= _ALLOWED_[from][msg.sender], "ALLOWANCE_NOT_ENOUGH");
+        if (amount > _SHARES_[from]) revert BALANCE_NOT_ENOUGH();
+        if (amount > _ALLOWED_[from][msg.sender]) revert ALLOWANCE_NOT_ENOUGH();
 
         _SHARES_[from] = _SHARES_[from] - amount;
         _SHARES_[to] = _SHARES_[to] + amount;
@@ -287,7 +316,7 @@ contract GSPVault is GSPStorage {
     }
 
     function _mint(address user, uint256 value) internal {
-        require(value > 1000, "MINT_AMOUNT_NOT_ENOUGH");
+        if (value <= 1000) revert MINT_AMOUNT_NOT_ENOUGH();
         _SHARES_[user] = _SHARES_[user] + value;
         totalSupply = totalSupply + value;
         emit Mint(user, value);
@@ -312,7 +341,7 @@ contract GSPVault is GSPStorage {
         bytes32 r,
         bytes32 s
     ) external {
-        require(deadline >= block.timestamp, "DODO_GSP_LP: EXPIRED");
+        if (deadline < block.timestamp) revert TIME_EXPIRED();
         bytes32 digest =
             keccak256(
                 abi.encodePacked(
@@ -332,10 +361,7 @@ contract GSPVault is GSPStorage {
             );
 
         address recoveredAddress = ecrecover(digest, v, r, s);
-        require(
-            recoveredAddress != address(0) && recoveredAddress == owner,
-            "DODO_GSP_LP: INVALID_SIGNATURE"
-        );
+        if (recoveredAddress == address(0) || recoveredAddress != owner) revert INVALID_SIGNATURE();
         _approve(owner, spender, value);
     }
 }

@@ -15,7 +15,26 @@ import {IDODOCallee} from "../../intf/IDODOCallee.sol";
 /// @notice this contract deal with swap
 contract GSPTrader is GSPVault {
 
+    struct TradeParamsStruct {
+        address pool;
+        bool isSellBase;
+        address recipient;
+        uint256 balance;
+        uint256 input;
+        string baseFeedId;
+        string quoteFeedId;
+    }
+
     // ============ Events ============
+    event InitiateTrade(
+        address pool,
+        bool isSellBase,
+        address receiver,
+        uint256 balance,
+        uint256 input,
+        string baseFeedId,
+        string quoteFeedId
+    );
 
     event DODOSwap(
         address fromToken,
@@ -31,29 +50,52 @@ contract GSPTrader is GSPVault {
     event RChange(PMMPricing.RState newRState);
 
     // ============ Trade Functions ============
-    /**
-     * @notice User sell base tokens, user pay tokens first. Must be used with a router
-     * @dev The base token balance is the actual balance minus the mt fee
-     * @param to The recipient of the output
-     * @return receiveQuoteAmount Amount of quote token received
-     */
-    function sellBase(address to) external nonReentrant returns (uint256 receiveQuoteAmount) {
+    function sellBase(address to) external {
         uint256 baseBalance = _BASE_TOKEN_.balanceOf(address(this)) - _MT_FEE_BASE_;
         uint256 baseInput = baseBalance - uint256(_BASE_RESERVE_);
+        emit InitiateTrade(
+            address(this),
+            true,
+            to,
+            baseBalance,
+            baseInput,
+            _BASE_FEED_ID_,
+            _QUOTE_FEED_ID_
+        );
+    }
+
+    function sellQuote(address to) external {
+        uint256 quoteBalance = _QUOTE_TOKEN_.balanceOf(address(this)) - _MT_FEE_QUOTE_;
+        uint256 quoteInput = quoteBalance - uint256(_QUOTE_RESERVE_);
+        emit InitiateTrade(
+            address(this),
+            false,
+            to,
+            quoteBalance,
+            quoteInput,
+            _BASE_FEED_ID_,
+            _QUOTE_FEED_ID_
+        );
+    }
+
+    function sellBase(TradeParamsStruct memory params) external nonReentrant returns (uint256 receiveQuoteAmount) {
+        if (msg.sender != _DATA_STREAMS_CONSUMER_) revert ACCESS_DENIED();
+        uint256 baseBalance = params.balance;
+        uint256 baseInput = params.input;
         uint256 mtFee;
         uint256 newBaseTarget;
         PMMPricing.RState newRState;
         // calculate the amount of quote token to receive and mt fee
         (receiveQuoteAmount, mtFee, newRState, newBaseTarget) = querySellBase(tx.origin, baseInput);
         // transfer quote token to recipient
-        _transferQuoteOut(to, receiveQuoteAmount);
+        _transferQuoteOut(params.recipient, receiveQuoteAmount);
         // update mt fee in quote token
         _MT_FEE_QUOTE_ = _MT_FEE_QUOTE_ + mtFee;
         
 
         // update TARGET
         if (_RState_ != uint32(newRState)) {    
-            require(newBaseTarget <= type(uint112).max, "OVERFLOW");
+            if (newBaseTarget > type(uint112).max) revert OVERFLOW();
             _BASE_TARGET_ = uint112(newBaseTarget);
             _RState_ = uint32(newRState);
             emit RChange(newRState);
@@ -67,18 +109,14 @@ contract GSPTrader is GSPVault {
             baseInput,
             receiveQuoteAmount,
             msg.sender,
-            to
+            params.recipient
         );
     }
 
-    /**
-     * @notice User sell quote tokens, user pay tokens first. Must be used with a router
-     * @param to The recipient of the output
-     * @return receiveBaseAmount Amount of base token received
-     */
-    function sellQuote(address to) external nonReentrant returns (uint256 receiveBaseAmount) {
-        uint256 quoteBalance = _QUOTE_TOKEN_.balanceOf(address(this)) - _MT_FEE_QUOTE_;
-        uint256 quoteInput = quoteBalance - uint256(_QUOTE_RESERVE_);
+    function sellQuote(TradeParamsStruct memory params) external nonReentrant returns (uint256 receiveBaseAmount) {
+        if (msg.sender != _DATA_STREAMS_CONSUMER_) revert ACCESS_DENIED();
+        uint256 quoteBalance = params.balance;
+        uint256 quoteInput = params.input;
         uint256 mtFee;
         uint256 newQuoteTarget;
         PMMPricing.RState newRState;
@@ -88,13 +126,13 @@ contract GSPTrader is GSPVault {
             quoteInput
         );
         // transfer base token to recipient
-        _transferBaseOut(to, receiveBaseAmount);
+        _transferBaseOut(params.recipient, receiveBaseAmount);
         // update mt fee in base token
         _MT_FEE_BASE_ = _MT_FEE_BASE_ + mtFee;
 
         // update TARGET
         if (_RState_ != uint32(newRState)) {
-            require(newQuoteTarget <= type(uint112).max, "OVERFLOW");
+            if (newQuoteTarget > type(uint112).max) revert OVERFLOW();
             _QUOTE_TARGET_ = uint112(newQuoteTarget);
             _RState_ = uint32(newRState);
             emit RChange(newRState);
@@ -108,7 +146,7 @@ contract GSPTrader is GSPVault {
             quoteInput,
             receiveBaseAmount,
             msg.sender,
-            to
+            params.recipient
         );
     }
 
@@ -135,10 +173,7 @@ contract GSPTrader is GSPVault {
         uint256 quoteBalance = _QUOTE_TOKEN_.balanceOf(address(this)) - _MT_FEE_QUOTE_;
 
         // no input -> pure loss
-        require(
-            baseBalance >= _BASE_RESERVE_ || quoteBalance >= _QUOTE_RESERVE_,
-            "FLASH_LOAN_FAILED"
-        );
+        if (baseBalance < _BASE_RESERVE_ && quoteBalance < _QUOTE_RESERVE_) revert FLASH_LOAN_FAILED();
 
         // sell quote case
         // quote input + base output
@@ -150,15 +185,12 @@ contract GSPTrader is GSPVault {
                 PMMPricing.RState newRState,
                 uint256 newQuoteTarget
             ) = querySellQuote(tx.origin, quoteInput); // revert if quoteBalance<quoteReserve
-            require(
-                (uint256(_BASE_RESERVE_) - baseBalance) <= receiveBaseAmount,
-                "FLASH_LOAN_FAILED"
-            );
+            if ((uint256(_BASE_RESERVE_) - baseBalance) > receiveBaseAmount) revert FLASH_LOAN_FAILED();
             
             _MT_FEE_BASE_ = _MT_FEE_BASE_ + mtFee;
             
             if (_RState_ != uint32(newRState)) {
-                require(newQuoteTarget <= type(uint112).max, "OVERFLOW");
+                if (newQuoteTarget > type(uint112).max) revert OVERFLOW();
                 _QUOTE_TARGET_ = uint112(newQuoteTarget);
                 _RState_ = uint32(newRState);
                 emit RChange(newRState);
@@ -183,15 +215,12 @@ contract GSPTrader is GSPVault {
                 PMMPricing.RState newRState,
                 uint256 newBaseTarget
             ) = querySellBase(tx.origin, baseInput); // revert if baseBalance<baseReserve
-            require(
-                (uint256(_QUOTE_RESERVE_) - quoteBalance) <= receiveQuoteAmount,
-                "FLASH_LOAN_FAILED"
-            );
+            if ((uint256(_QUOTE_RESERVE_) - quoteBalance) > receiveQuoteAmount) revert FLASH_LOAN_FAILED();
 
             _MT_FEE_QUOTE_ = _MT_FEE_QUOTE_ + mtFee;
             
             if (_RState_ != uint32(newRState)) {
-                require(newBaseTarget <= type(uint112).max, "OVERFLOW");
+                if (newBaseTarget > type(uint112).max) revert OVERFLOW();
                 _BASE_TARGET_ = uint112(newBaseTarget);
                 _RState_ = uint32(newRState);
                 emit RChange(newRState);

@@ -30,7 +30,9 @@ contract GSP is GSPTrader, GSPFunding {
      * @param mtFeeRate The rate of mt fee, with 18 decimal
      * @param i The oracle price, possible to be changed only by maintainer
      * @param k The swap curve parameter
-     * @param isOpenTWAP Useless, always false, just for compatible with old version pool
+     * @param dataStreamsConsumer The data stream consumer address
+     * @param baseFeedId The base feed id
+     * @param quoteFeedId The quote feed id
      */
     function init(
         address maintainer,
@@ -41,14 +43,20 @@ contract GSP is GSPTrader, GSPFunding {
         uint256 mtFeeRate,
         uint256 i,
         uint256 k,
-        bool isOpenTWAP
+        address dataStreamsConsumer,
+        string memory baseFeedId,
+        string memory quoteFeedId
     ) external {
         // GSP can only be initialized once
-        require(!_GSP_INITIALIZED_, "GSP_INITIALIZED");
+        if (_GSP_INITIALIZED_) {
+            revert GSP_INITIALIZED();
+        }
         // _GSP_INITIALIZED_ is set to true after initialization
         _GSP_INITIALIZED_ = true;
         // baseTokenAddress and quoteTokenAddress should not be the same
-        require(baseTokenAddress != quoteTokenAddress, "BASE_QUOTE_CAN_NOT_BE_SAME");
+        if (baseTokenAddress == quoteTokenAddress) {
+            revert BASE_QUOTE_CAN_NOT_BE_SAME();
+        }
         // _BASE_TOKEN_ and _QUOTE_TOKEN_ should be valid ERC20 tokens
         _BASE_TOKEN_ = IERC20(baseTokenAddress);
         _QUOTE_TOKEN_ = IERC20(quoteTokenAddress);
@@ -67,7 +75,13 @@ contract GSP is GSPTrader, GSPFunding {
         // _MAINTAINER_ is set when initialization, the address receives the fee
         _MAINTAINER_ = maintainer;
         _ADMIN_ = admin;
+
+        _PRICE_LIMIT_ = 1000;
         // _IS_OPEN_TWAP_ is always false
+
+        _DATA_STREAMS_CONSUMER_ = dataStreamsConsumer;
+        _BASE_FEED_ID_ = baseFeedId;
+        _QUOTE_FEED_ID_ = quoteFeedId;
         _IS_OPEN_TWAP_ = false;
 
 
@@ -130,6 +144,6 @@ contract GSP is GSPTrader, GSPFunding {
      * @return The current version is 1.0.1
      */
     function version() external pure returns (string memory) {
-        return "GSP 1.0.1";
+        return "GSP 1.0.2";
     }
 }

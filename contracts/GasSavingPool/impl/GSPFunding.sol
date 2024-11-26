@@ -49,13 +49,13 @@ contract GSPFunding is GSPVault {
         quoteInput = quoteBalance - quoteReserve;
 
         // BaseToken should be transferred to GSP before calling buyShares
-        require(baseInput > 0, "NO_BASE_INPUT");
+        if (baseInput == 0) revert ZERO_BASE_INPUT();
 
         // Round down when withdrawing. Therefore, never be a situation occuring balance is 0 but totalsupply is not 0
         // But May Happen，reserve >0 But totalSupply = 0
         if (totalSupply == 0) {
             // case 1. initial supply
-            require(quoteBalance > 0, "ZERO_QUOTE_AMOUNT");
+            if (quoteBalance == 0) revert ZERO_QUOTE_AMOUNT();
             // The shares will be minted to user
             shares = quoteBalance < DecimalMath.mulFloor(baseBalance, _I_)
                 ? DecimalMath.divFloor(quoteBalance, _I_)
@@ -63,9 +63,9 @@ contract GSPFunding is GSPVault {
             // The target will be updated
             _BASE_TARGET_ = uint112(shares);
             _QUOTE_TARGET_ = uint112(DecimalMath.mulFloor(shares, _I_));
-            require(_QUOTE_TARGET_ > 0, "QUOTE_TARGET_IS_ZERO");
+            if (_QUOTE_TARGET_ == 0) revert QUOTE_TARGET_IS_ZERO();
             // Lock 1001 shares permanently in first deposit 
-            require(shares > 2001, "MINT_AMOUNT_NOT_ENOUGH");
+            if (shares <= 2001) revert MINT_AMOUNT_NOT_ENOUGH();
             _mint(address(0), 1001);
             shares -= 1001;
         } else if (baseReserve > 0 && quoteReserve > 0) {
@@ -104,9 +104,9 @@ contract GSPFunding is GSPVault {
         uint256 deadline
     ) external nonReentrant returns (uint256 baseAmount, uint256 quoteAmount) {
         // The deadline should be greater than current timestamp
-        require(deadline >= block.timestamp, "TIME_EXPIRED");
+        if (deadline < block.timestamp) revert TIME_EXPIRED();
         // The amount of shares user want to sell should be less than user's balance
-        require(shareAmount <= _SHARES_[msg.sender], "GLP_NOT_ENOUGH");
+        if (shareAmount > _SHARES_[msg.sender]) revert GLP_NOT_ENOUGH();
 
         // The balance of baseToken and quoteToken should be the balance minus the fee
         uint256 baseBalance = _BASE_TOKEN_.balanceOf(address(this)) - _MT_FEE_BASE_;
@@ -123,10 +123,7 @@ contract GSPFunding is GSPVault {
         _QUOTE_TARGET_ = uint112(uint256(_QUOTE_TARGET_) - DecimalMath._divCeil((uint256(_QUOTE_TARGET_) * (shareAmount)), totalShares));
         
         // The calculated baseToken and quoteToken amount should geater than minBaseToken and minQuoteToken
-        require(
-            baseAmount >= baseMinAmount && quoteAmount >= quoteMinAmount,
-            "WITHDRAW_NOT_ENOUGH"
-        );
+        if (baseAmount < baseMinAmount || quoteAmount < quoteMinAmount) revert WITHDRAW_NOT_ENOUGH();
 
         // The shares will be burned from user
         // The baseToken and quoteToken will be transferred to user

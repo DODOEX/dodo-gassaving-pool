@@ -58,6 +58,11 @@ contract GSPStorage is ReentrancyGuard {
     mapping(address => uint256) internal _SHARES_;
     mapping(address => mapping(address => uint256)) internal _ALLOWED_;
 
+    // ============ Data Streams ============
+    string public _BASE_FEED_ID_;
+    string public _QUOTE_FEED_ID_;
+    address public _DATA_STREAMS_CONSUMER_;
+
     // ================= Permit ======================
 
     bytes32 public DOMAIN_SEPARATOR;
@@ -73,8 +78,8 @@ contract GSPStorage is ReentrancyGuard {
     uint256 public _LP_FEE_RATE_;
     uint256 public _K_;
     uint256 public _I_;
-    // _PRICE_LIMIT_ is 1/1000 by default, which is used to limit the setting range of I
-    uint256 public _PRICE_LIMIT_ = 1e3;
+    // _PRICE_LIMIT_ is used to limit the setting range of I
+    uint256 public _PRICE_LIMIT_;
 
     // ============ Mt Fee ============
     // _MT_FEE_BASE_ represents the mt fee in base token
@@ -83,6 +88,29 @@ contract GSPStorage is ReentrancyGuard {
     uint256 public _MT_FEE_QUOTE_;
     // _MT_FEE_RATE_MODEL_ is useless, just for compatible with old version pool
     address public _MT_FEE_RATE_MODEL_ = address(0);
+
+    // ============ Error ============
+    error GSP_INITIALIZED();
+    error BASE_QUOTE_CAN_NOT_BE_SAME();
+    error ZERO_BASE_INPUT();
+    error ZERO_QUOTE_AMOUNT();
+    error QUOTE_TARGET_IS_ZERO();
+    error MINT_AMOUNT_NOT_ENOUGH();
+    error TIME_EXPIRED();
+    error GLP_NOT_ENOUGH();
+    error WITHDRAW_NOT_ENOUGH();
+    error OVERFLOW();
+    error FLASH_LOAN_FAILED();
+    error INVALID_PRICE_LIMIT();
+    error INVALID_MT_FEE_RATE();
+    error INVALID_LP_FEE_RATE();
+    error INVALID_K();
+    error EXCEED_PRICE_LIMIT();
+    error BALANCE_NOT_ENOUGH();
+    error ALLOWANCE_NOT_ENOUGH();
+    error INVALID_SIGNATURE();
+    error ACCESS_DENIED();
+ 
 
     // ============ Helper Functions ============
 
