@@ -21,7 +21,7 @@ link: [https://www.diffchecker.com/Cl4eG2Xg/](https://www.diffchecker.com/Cl4eG2
 link: [DODO_GSP_Audit_Report](https://github.com/DODOEX/dodo-gassaving-pool/blob/main/DODO_GSP_Audit_Report.pdf)
 
 ## Test
-The test of GSP implemets Foundry framework, and you can run the test using Foundry test command.
+The test of GSP implements Foundry framework, and you can run the test using Foundry test command.
 
 The test should be runned with forking ETH mainnet. You can set an `env.` first, then run the tests with `--fork-url $ETH_RPC_URL `.
 
